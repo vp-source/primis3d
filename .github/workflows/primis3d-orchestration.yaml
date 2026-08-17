@@ -7,8 +7,17 @@ name: "Deploy Now: Orchestration"
 run-name: "Deploy Now: Build primis3d · ${{ github.event.head_commit.message || format('Triggered by {0}', github.triggering_actor) }}"
 
 on:
-  - push
-  - workflow_dispatch
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: primis3d-production
+  cancel-in-progress: false
 
 jobs:
   retrieve-project:
@@ -19,7 +28,7 @@ jobs:
       branch-id: ${{ fromJson(steps.project.outputs.info).branch-id }}
     steps:
       - name: Fetch project data
-        uses: ionos-deploy-now/project-action@v1
+        uses: ionos-deploy-now/project-action@95e8bc58cdc22a86df7709493de6054179881470 # v1
         id: project
         with:
           api-key: ${{ secrets.IONOS_API_KEY }}
@@ -36,7 +45,8 @@ jobs:
     with:
       site-url: https://IONOS_DEPLOY_NOW_SITE_URL
       branch-id: ${{ needs.retrieve-project.outputs.branch-id }}
-    secrets: inherit
+    secrets:
+      IONOS_API_KEY: ${{ secrets.IONOS_API_KEY }}
 
   deploy:
     name: trigger deployment
@@ -46,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch deployment(s)
-        uses: ionos-deploy-now/project-action@v1
+        uses: ionos-deploy-now/project-action@95e8bc58cdc22a86df7709493de6054179881470 # v1
         with:
           api-key: ${{ secrets.IONOS_API_KEY }}
           service-host: api-eu.ionos.space
