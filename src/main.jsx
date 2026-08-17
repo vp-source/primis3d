@@ -1,0 +1,869 @@
+import React, { useEffect, useState } from 'react'
+import { createRoot } from 'react-dom/client'
+import './styles.css'
+
+const Arrow = ({ down = false }) => (
+  <svg viewBox="0 0 20 20" aria-hidden="true">
+    {down ? <path d="M10 4v11m0 0 4-4m-4 4-4-4" /> : <path d="M5 15 15 5m0 0H8m7 0v7" />}
+  </svg>
+)
+
+const LogoMark = () => (
+  <svg className="logo-mark" viewBox="0 0 112 40" aria-hidden="true">
+    <path d="M17 17a14 14 0 0 1 28 0M45 23a14 14 0 0 1-28 0" />
+    <path d="M4 20h89" />
+    <circle cx="106" cy="20" r="2.25" />
+  </svg>
+)
+
+const SparkIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2c.4 5.9 4.1 9.6 10 10-5.9.4-9.6 4.1-10 10-.4-5.9-4.1-9.6-10-10 5.9-.4 9.6-4.1 10-10Z" />
+  </svg>
+)
+
+function Header() {
+  const path = window.location.pathname.replace(/\/$/, '') || '/'
+  const lightHeader = path.startsWith('/research/') || [
+    '/contact',
+    '/privacy',
+    '/datenschutz',
+    '/datenschutz.html',
+    '/impressum',
+    '/impressum.html',
+  ].includes(path)
+
+  return (
+    <header className={`site-header${lightHeader ? ' site-header-light' : ''}`}>
+      <a className="brand" href="/" aria-label="Primis home">
+        <LogoMark />
+        <span>Primis</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="/worlds">Worlds</a>
+        <a href="/about">About</a>
+        <a href="/research">Research &amp; Simulation</a>
+        <a className="nav-cta" href="/studio">Try Atlas <Arrow /></a>
+      </nav>
+    </header>
+  )
+}
+
+function WorldPlaceholder() {
+  return (
+    <div className="world-wrap">
+      <div className="world-glow" />
+      <svg className="hero-filter-def" aria-hidden="true">
+        <filter id="spatial-field-alpha" colorInterpolationFilters="sRGB">
+          <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  .333 .333 .333 0 0" />
+          <feComponentTransfer><feFuncA type="gamma" amplitude="1" exponent="1.35" offset="0" /></feComponentTransfer>
+        </filter>
+      </svg>
+      <img className="hero-world-image" src="/assets/atlas-spatial-field.png" alt="A luminous spatial field represented as a flowing three-dimensional grid" />
+    </div>
+  )
+}
+
+function Hero() {
+  return (
+    <section className="hero" id="top">
+      <div className="hero-content">
+        <div className="hero-copy">
+          <h1><span>From one photo</span><br /><em>to a 3D world.</em></h1>
+          <h2>Editable. Measurable. Ready to simulate.</h2>
+          <p>Atlas reconstructs a single photograph as a 3D scene, estimates real-world scale, identifies each object, and prepares the result for robotics, simulation, or any 3D pipeline.</p>
+        </div>
+        <WorldPlaceholder />
+      </div>
+    </section>
+  )
+}
+
+function LiveDemoPreview() {
+  const demoStart = 7.6
+
+  return (
+    <section className="home-live-demo" id="live-demo">
+      <div className="home-live-demo-heading">
+        <h2>See a photo<br />become a world.</h2>
+        <p>Drop in a single image and watch Atlas reconstruct it as a fully editable, to-scale 3D world. Inspect the geometry, object labels, and scene structure as every element is placed, named, and prepared for editing—captured live in Atlas Studio.</p>
+      </div>
+      <div className="home-live-demo-frame" aria-label="Atlas reconstruction demonstration">
+        <video
+          className="home-demo-video"
+          autoPlay
+          muted
+          playsInline
+          preload="metadata"
+          onLoadedMetadata={(event) => { event.currentTarget.currentTime = demoStart }}
+          onEnded={(event) => {
+            event.currentTarget.currentTime = demoStart
+            event.currentTarget.play()
+          }}
+        >
+          <source src="/assets/primis-demo-trimmed.webm" type="video/webm" />
+        </video>
+      </div>
+    </section>
+  )
+}
+
+function Vision() {
+  return (
+    <section className="vision" id="about">
+      <div className="vision-grid">
+        <div className="visual-card" id="demo" aria-label="Abstract world visualization">
+          <img className="section-art" src="/assets/primis-world-model-v4.png" alt="A minimal office represented as a structured spatial world model" />
+        </div>
+        <article className="statement-card" id="research-simulation">
+          <div className="statement-copy">
+            <h3>The foundation everything<br /><em>else is built on.</em></h3>
+            <p>Spatial intelligence and simulation are only as capable as the worlds they run in.</p>
+            <p>We build that foundation: autonomous, labeled world generation that turns raw capture into metric, simulation-ready scenes, every object named, placed, and editable.</p>
+          </div>
+          <div className="statement-bottom">
+            <a className="button button-coral" href="/worlds">Explore worlds <Arrow /></a>
+          </div>
+        </article>
+      </div>
+    </section>
+  )
+}
+
+const researchArticles = [
+  {
+    slug: 'spatial-intelligence', number: '01', category: 'SPATIAL INTELLIGENCE', title: 'Teaching machines to understand physical space',
+    deck: 'How Primis turns reconstructed scenes into world models that preserve scale, objects, relationships, visibility, and possible action.',
+    hero: { type: 'image', src: '/assets/primis-world-model-v4.png', fit: 'contain' }, indexImage: '/assets/primis-world-model-v4.png',
+    overview: [
+      'A useful spatial model must describe more than appearance. It needs to represent where surfaces begin and end, how large objects are, what contains what, which regions are visible, and where an agent can move.',
+      'Primis treats reconstruction as the first layer of spatial intelligence. Atlas converts visual capture into an editable environment whose geometry, semantics, and relationships can be inspected by people and reasoned over by machines.'
+    ],
+    sections: [
+      { title: 'From pixels to a world model', paragraphs: ['An image records projected light. A world model must recover structure: metric geometry, object boundaries, support relationships, free space, occlusion, and scene-level organization. Atlas is designed to keep those elements connected rather than producing an isolated visual asset.'] },
+      { title: 'Representing relationships', paragraphs: ['Objects become more useful when their relationships are explicit. A table supports a tool. A cabinet contains a component. A doorway connects two traversable regions. These relations allow a model to answer spatial questions and predict how a change in one part of the scene affects another.'], points: ['Metric distance and relative scale', 'Containment, support, and adjacency', 'Visibility and occlusion', 'Traversability and reachable space'] },
+      { title: 'Toward spatial reasoning', paragraphs: ['The research direction is to make reconstructed worlds usable as persistent reasoning environments. A system should be able to locate an object, compare alternatives, plan a route, test an action, and update its understanding when the scene changes.'] }
+    ],
+    secondary: { type: 'video', src: '/assets/cap-reconstruct.mp4', caption: 'A visual input becoming structured geometry and scene elements.' },
+    quote: 'The goal is not to make a 3D picture. It is to construct a world a machine can understand and use.'
+  },
+  {
+    slug: 'robot-generalization', number: '02', category: 'ROBOT LEARNING', title: 'Generalizing robot behavior across every scene',
+    deck: 'Digital twins can let robots practice one capability across many layouts, objects, viewpoints, and operating conditions instead of memorizing one setup.',
+    hero: { type: 'video', src: '/assets/cap-simulate.mp4' }, indexImage: '/assets/cap-simulate.jpg',
+    overview: [
+      'Robots are often trained and validated in a narrow environment. A policy that succeeds in one carefully arranged room may fail when the same objects move, the path changes, or the camera sees the task from another angle.',
+      'Primis explores a different foundation: reconstruct a real scene, preserve its physical structure, and generate controlled variations in which a robot can repeatedly perceive, plan, move, and interact.'
+    ],
+    sections: [
+      { title: 'Breaking the fixed-scene barrier', paragraphs: ['Generalization requires experience across meaningful variation. The task should stay recognizable while distances, object placement, visibility, clutter, and routes change. Structured Atlas worlds make those factors editable instead of forcing researchers to rebuild each environment by hand.'] },
+      { title: 'One capability, many worlds', paragraphs: ['A manipulation or navigation policy can be tested against multiple reconstructions of offices, workshops, homes, and industrial spaces. Failures can be traced back to geometry, perception, or planning rather than being hidden inside an opaque video dataset.'], points: ['Manipulation across changing object arrangements', 'Locomotion across unfamiliar floor plans', 'Perception under occlusion and viewpoint shifts', 'Planning with altered obstacles and reachable regions'] },
+      { title: 'From rehearsal to transfer', paragraphs: ['The long-term aim is to let robots reason and generalize inside digital twins before acting in the physical world. Instead of learning one motion for one scene, a robot learns the spatial conditions under which an action remains valid.'] }
+    ],
+    secondary: { type: 'image', src: '/assets/robotics-g1b.jpg', caption: 'A simulated robot evaluated inside a structured workshop scene.' },
+    quote: 'A robot should learn why an action works—not only where it worked once.'
+  },
+  {
+    slug: 'simulation-digital-twins', number: '03', category: 'SIMULATION', title: 'Turning captured places into simulation systems',
+    deck: 'Metric reconstruction can turn an existing room, facility, or site into a repeatable environment for planning, testing, and operational study.',
+    hero: { type: 'image', src: '/assets/research-locomotion.jpg' }, indexImage: '/assets/research-locomotion.jpg',
+    overview: [
+      'Simulation becomes more valuable when it corresponds to a place that actually exists. A reconstructed digital twin preserves the constraints that matter: dimensions, obstacles, lines of sight, access routes, and the placement of equipment.',
+      'Atlas is intended to reduce the manual work between visual capture and a scene that can be edited, instrumented, and loaded into a simulation pipeline.'
+    ],
+    sections: [
+      { title: 'A measurable environment', paragraphs: ['Real-world scale allows a simulator to reason about clearance, reach, collision, travel time, and sensor coverage. Objects remain separate so that researchers can remove, replace, articulate, or instrument them.'] },
+      { title: 'Repeatable operational questions', paragraphs: ['The same scene can support many experiments without changing the physical site. Teams can compare layouts, rehearse routes, study failure conditions, and evaluate proposed interventions under controlled conditions.'], points: ['Robot and vehicle navigation', 'Industrial process planning', 'Safety and accessibility studies', 'Sensor and camera placement'] },
+      { title: 'A living digital twin', paragraphs: ['A useful twin should evolve with the physical environment. Future work includes aligning repeated captures, tracking structural changes, and preserving the relationship between reconstructed geometry and operational data.'] }
+    ],
+    secondary: { type: 'video', src: '/assets/cap-simulate.mp4', caption: 'A reconstructed environment prepared as a repeatable simulation space.' },
+    quote: 'The physical site becomes a testable system rather than a static scan.'
+  },
+  {
+    slug: 'articulated-models', number: '04', category: 'CAD & ARTICULATION', title: 'Reconstructing assemblies that can move',
+    deck: 'Multicomponent models, mechanical relationships, and joint articulation turn captured objects into editable functional systems.',
+    hero: { type: 'image', src: '/assets/research-manipulation.jpg' }, indexImage: '/assets/research-manipulation.jpg',
+    overview: [
+      'Many objects are not single rigid meshes. Doors rotate around hinges, drawers translate along rails, tools contain moving components, and industrial assemblies expose constrained degrees of freedom.',
+      'Primis explores how reconstruction can identify components and preserve the relationships required for CAD remodeling, simulation, and interaction.'
+    ],
+    sections: [
+      { title: 'From one mesh to an assembly', paragraphs: ['Separating a captured object into meaningful components makes it possible to edit, replace, measure, and simulate each part independently. The resulting hierarchy can serve as a reference for parametric remodeling or as a directly manipulable scene asset.'] },
+      { title: 'Joint-aware reconstruction', paragraphs: ['A useful articulated model specifies how components may move. Hinges, sliders, pivots, limits, and parent-child relationships encode the kinematic structure behind visible geometry.'], points: ['Component segmentation and hierarchy', 'Joint type and axis estimation', 'Motion limits and collision constraints', 'Export into CAD and simulation workflows'] },
+      { title: 'Learning through interaction', paragraphs: ['Articulated environments expand the actions a robot can rehearse. Opening, closing, rotating, inserting, and removing become scene-level capabilities rather than manually scripted exceptions.'] }
+    ],
+    secondary: { type: 'image', src: '/assets/primis-world-model-v4.png', fit: 'contain', caption: 'Objects represented as bounded components inside a larger spatial system.' },
+    quote: 'Geometry describes shape. Articulation describes what the object can do.'
+  },
+  {
+    slug: 'designed-worlds', number: '05', category: 'GAMES & ARCHITECTURE', title: 'Using reconstruction as a design substrate',
+    deck: 'A captured place can become the measurable starting point for game environments, architectural studies, virtual production, and spatial composition.',
+    hero: { type: 'image', src: '/assets/games-desert.jpg' }, indexImage: '/assets/games-desert.jpg',
+    overview: [
+      'Design work often begins by recreating context that already exists. Reference photographs, site visits, and measured drawings are translated into an initial model before creative work can begin.',
+      'Atlas aims to compress that setup step by producing editable geometry, scale, and scene organization directly from visual capture.'
+    ],
+    sections: [
+      { title: 'A world ready to change', paragraphs: ['Reconstruction should not be the final artifact. It should be a spatial substrate that designers can block out, extend, relight, recompose, and populate while retaining a coherent relationship to the source environment.'] },
+      { title: 'Across creative disciplines', paragraphs: ['The same structured scene can support different outputs depending on the downstream tool and level of fidelity required.'], points: ['Level blocking and environment composition', 'Architectural documentation and layout studies', 'Previsualization and digital set construction', 'Camera planning and scene extension'] },
+      { title: 'Keeping context intact', paragraphs: ['Metric scale and object separation make a reconstruction more useful than a flattened visual reference. Designers can preserve the parts that matter, replace the parts that do not, and trace decisions back to the captured site.'] }
+    ],
+    secondary: { type: 'video', src: '/assets/cap-reconstruct.mp4', caption: 'A captured reference entering an editable 3D production workflow.' },
+    quote: 'Reconstruction is most powerful when it becomes the beginning of design, not the end.'
+  },
+  {
+    slug: 'spatial-datasets', number: '06', category: 'SPATIAL AI DATA', title: 'Generating structured data from reconstructed worlds',
+    deck: 'One aligned environment can produce geometry, depth, segmentation, trajectories, relationships, and controlled variations for training and evaluation.',
+    hero: { type: 'video', src: '/assets/cap-synthetic.mp4' }, indexImage: '/assets/cap-synthetic.jpg',
+    overview: [
+      'Spatial AI requires data that remains consistent across representations. An RGB frame, depth map, segmentation mask, camera pose, object graph, and 3D surface are most useful when they describe the same underlying world.',
+      'Atlas worlds provide a shared scene from which those channels can be rendered, modified, and evaluated together.'
+    ],
+    sections: [
+      { title: 'Aligned by construction', paragraphs: ['Because outputs originate from one scene model, geometry and labels remain spatially registered. This supports evaluation across perception, reconstruction, scene understanding, and action planning tasks.'] },
+      { title: 'Controlled variation', paragraphs: ['Objects, lighting, viewpoints, layouts, and trajectories can change while the experiment preserves explicit control over what changed and what remained constant.'], points: ['RGB, depth, normals, and segmentation', 'Camera poses and movement trajectories', 'Object labels and relationship graphs', 'Scene and layout variations'] },
+      { title: 'Data with a purpose', paragraphs: ['The objective is not unlimited synthetic imagery. It is targeted spatial evidence: datasets organized around the conditions a system needs to perceive, reason about, or act within.'] }
+    ],
+    secondary: { type: 'image', src: '/assets/research-spatial-data.jpg', caption: 'Structured scene channels generated from one spatial environment.' },
+    quote: 'A world model can become a dataset without losing the relationships that make the data meaningful.'
+  }
+]
+
+function InnerPageHero({ label, title, accent, copy }) {
+  return (
+    <section className="inner-hero">
+      <div className="inner-hero-kicker">{label}</div>
+      <div className="inner-hero-layout">
+        <h1>{title}<br /><em>{accent}</em></h1>
+        <div className="inner-hero-copy">
+          <span className="mini-rule" />
+          <p>{copy}</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function AboutPage() {
+  return (
+    <main className="inner-page">
+      <Header />
+      <InnerPageHero
+        label="ABOUT PRIMIS"
+        title="We turn images into"
+        accent="working 3D worlds."
+        copy="Primis is the company behind Atlas: software that reconstructs a photograph as a measurable, editable 3D environment for machines and people to use."
+      />
+
+      <section className="about-mission">
+        <div className="about-visual">
+          <img className="section-art" src="/assets/primis-foundation.jpg" alt="Illustrated workshop transforming into spatial structure" />
+        </div>
+        <article className="about-copy-card">
+          <span className="card-index">THE MISSION</span>
+          <h2>Spatial intelligence<br />that carries into<br /><em>the real world.</em></h2>
+          <p>Most robots learn a narrow behavior in a fixed setup. Primis is building editable digital twins where robots can reason about objects, geometry, affordances, and consequences; practice actions across many variations; and transfer what they learn to unfamiliar spaces. The goal is to move robotics beyond task-by-task programming toward machines that can generalize.</p>
+        </article>
+      </section>
+
+      <section className="founder-section">
+        <div className="founder-heading">
+          <span className="section-index">FOUNDER</span>
+          <h2>Built by a maker,<br />for people who build.</h2>
+        </div>
+        <div className="founder-grid">
+          <div className="founder-monogram founder-portrait"><img src="/assets/founder.jpg" alt="Vladislav Praznik with a robotics project" /><small>GERMANY / 2026</small></div>
+          <div className="founder-story">
+            <h3>Vladislav Praznik</h3>
+            <p>Primis is built by a robotics builder and multimodal AI researcher from Germany. The company grew from work close to search-and-rescue robotics, industrial technology and the people who need spatial systems to work outside the lab.</p>
+            <p>The conviction is simple: while everyone races to build intelligence on top, the foundational layer that lets machines understand and act in the physical world is still missing.</p>
+            <a className="button button-ghost" href="mailto:hello@primisintelligence.com">Talk to Primis <Arrow /></a>
+          </div>
+        </div>
+      </section>
+      <SiteFooter />
+    </main>
+  )
+}
+
+function ResearchPage() {
+  return (
+    <main className="inner-page research-index-page">
+      <Header />
+      <section className="research-index-hero">
+        <div className="research-index-title">
+          <span>RESEARCH &amp; SIMULATION</span>
+          <h1>Ideas for machines<br /><em>that understand space.</em></h1>
+        </div>
+        <p>Primis research explores the systems built on reconstructed worlds: spatial reasoning, robot learning, simulation, articulated objects, design workflows, and structured AI data.</p>
+      </section>
+      <section className="research-publications" aria-label="Primis research directions">
+        {researchArticles.map(article => (
+          <a className="research-publication" href={`/research/${article.slug}`} key={article.slug}>
+            <div className="research-publication-media"><img src={article.indexImage} alt="" loading="lazy" /></div>
+            <div className="research-publication-meta"><span>{article.number}</span><span>{article.category}</span></div>
+            <h2>{article.title}</h2>
+            <p>{article.deck}</p>
+            <span className="research-publication-link">Read research <Arrow /></span>
+          </a>
+        ))}
+      </section>
+      <SiteFooter />
+    </main>
+  )
+}
+
+function ResearchMedia({ media, className = '' }) {
+  if (!media) return null
+  return (
+    <figure className={`research-story-media ${media.fit === 'contain' ? 'media-contain' : ''} ${className}`}>
+      {media.type === 'video'
+        ? <video autoPlay muted loop playsInline preload="metadata"><source src={media.src} type="video/mp4" /></video>
+        : <img src={media.src} alt="" />}
+      {media.caption && <figcaption>{media.caption}</figcaption>}
+    </figure>
+  )
+}
+
+function ResearchArticlePage({ article }) {
+  const related = researchArticles.filter(item => item.slug !== article.slug).slice(0, 3)
+
+  useEffect(() => {
+    document.title = `${article.title} · Primis`
+    return () => { document.title = 'Primis' }
+  }, [article.title])
+
+  return (
+    <main className="inner-page research-story-page">
+      <Header />
+      <article className="research-story">
+        <ResearchMedia media={article.hero} className="research-story-hero-media" />
+        <header className="research-story-heading">
+          <div><span>PRIMIS RESEARCH / 2026</span><span>{article.category}</span></div>
+          <p>{article.deck}</p>
+          <h1>{article.title}</h1>
+        </header>
+
+        <div className="research-story-body">
+          <section>
+            <h2>Overview</h2>
+            {article.overview.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+          </section>
+
+          {article.sections.map((section, index) => (
+            <React.Fragment key={section.title}>
+              {index === 1 && <ResearchMedia media={article.secondary} className="research-story-inline-media" />}
+              <section>
+                <h2>{section.title}</h2>
+                {section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+                {section.points && <ul>{section.points.map(point => <li key={point}>{point}</li>)}</ul>}
+              </section>
+            </React.Fragment>
+          ))}
+
+          <blockquote>{article.quote}</blockquote>
+        </div>
+
+        <section className="research-related" aria-labelledby="related-research-title">
+          <h2 id="related-research-title">Continue reading.</h2>
+          <div>
+            {related.map(item => <a href={`/research/${item.slug}`} key={item.slug}><img src={item.indexImage} alt="" loading="lazy" /><span>{item.category}</span><h3>{item.title}</h3></a>)}
+          </div>
+        </section>
+      </article>
+      <SiteFooter />
+    </main>
+  )
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer" id="footer">
+      <div className="footer-world-panel">
+        <div className="footer-heading">
+          <h2>Bring your world<br /><em>into Atlas.</em></h2>
+          <a className="button footer-cta" href="/studio">Try Atlas Studio <Arrow /></a>
+        </div>
+        <nav className="footer-nav" aria-label="Footer navigation">
+          <a href="/worlds">Worlds</a>
+          <a href="/about">About</a>
+          <a href="/research">Research &amp; Simulation</a>
+          <a href="/contact">Contact</a>
+          <a href="/studio">Try Atlas</a>
+        </nav>
+          <img className="footer-landscape-image" src="/assets/primis-footer-world-v3.jpg" alt="" aria-hidden="true" />
+      </div>
+      <div className="footer-bottom">
+        <a className="brand" href="/"><LogoMark /><span>Primis</span></a>
+        <p>© 2026 PRIMIS INTELLIGENCE<br />BUILDING THE FOUNDATION FOR SPATIAL INTELLIGENCE.</p>
+        <div><a href="mailto:hello@primisintelligence.com">EMAIL</a><a href="/impressum">IMPRINT</a><a href="/privacy">PRIVACY</a></div>
+      </div>
+    </footer>
+  )
+}
+
+function AtlasOverview() {
+  const researchStories = [
+    { href: '/research/designed-worlds', image: '/assets/games-desert.jpg', area: 'GAME ENVIRONMENT DESIGN', title: 'Build an editable world from a visual reference', text: 'Use reconstructed geometry as a starting point for level composition, asset placement, and world design.' },
+    { href: '/research/robot-generalization', image: '/assets/cap-simulate.jpg', area: 'ROBOTICS & SIMULATION', title: 'Test physical tasks before touching hardware', text: 'Robots can rehearse navigation and manipulation inside a reconstruction of the real environment.' },
+    { href: '/research/spatial-datasets', image: '/assets/cap-synthetic.jpg', area: 'SYNTHETIC DATA', title: 'Turn one environment into controlled variations', text: 'Generate aligned layouts and labeled scenes for spatial model training and evaluation.' }
+  ]
+  return (
+    <section className="primis-overview" id="primis">
+      <div className="overview-intro">
+        <span className="section-index">ATLAS</span>
+        <h2>One image.<br />Many working worlds.</h2>
+        <p>Atlas produces editable geometry, real-world scale, labeled objects, and a scene that can be loaded into simulation or a standard 3D workflow.</p>
+      </div>
+      <div className="overview-cards">
+        {researchStories.map(story => (
+          <a className="research-story" href={story.href} key={story.title}>
+            <div className="research-story-copy"><span>{story.area}</span><h3>{story.title}</h3><p>{story.text}</p></div>
+            <img src={story.image} alt="" />
+          </a>
+        ))}
+      </div>
+      <a className="button button-light overview-button" href="/research">Explore Research &amp; Simulation <Arrow /></a>
+    </section>
+  )
+}
+
+const demoObjects = [
+  { id: 'workbench', name: 'Workbench', type: 'Surface', confidence: '98%' },
+  { id: 'robot', name: 'Robot arm', type: 'Articulated', confidence: '96%' },
+  { id: 'crate', name: 'Storage crate', type: 'Container', confidence: '94%' },
+  { id: 'floor', name: 'Workshop floor', type: 'Structure', confidence: '99%' }
+]
+
+function DemoStudio() {
+  const [mode, setMode] = useState('Scene')
+  const [selected, setSelected] = useState('robot')
+  const [sourceImage, setSourceImage] = useState('')
+  const [reconstructing, setReconstructing] = useState(false)
+  const [complete, setComplete] = useState(false)
+  const [layers, setLayers] = useState({ labels: true, geometry: true, path: true })
+  const [question, setQuestion] = useState('Where is the robot arm?')
+  const [answer, setAnswer] = useState('The robot arm is 1.2 m ahead, mounted beside the workbench.')
+
+  const loadImage = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => { setSourceImage(reader.result); setComplete(false) }
+    reader.readAsDataURL(file)
+  }
+
+  const reconstruct = () => {
+    setReconstructing(true)
+    setComplete(false)
+    window.setTimeout(() => { setReconstructing(false); setComplete(true); setMode('Scene') }, 1500)
+  }
+
+  const askScene = (event) => {
+    event.preventDefault()
+    if (!question.trim()) return
+    const normalized = question.toLowerCase()
+    if (normalized.includes('crate')) setAnswer('The storage crate is beneath the workbench, 0.8 m to the right of the robot arm.')
+    else if (normalized.includes('workbench')) setAnswer('The workbench spans the center of the scene and is identified as a primary support surface.')
+    else setAnswer('The selected object is visible and spatially grounded in the reconstructed workshop scene.')
+  }
+
+  return (
+    <section className="studio-section" id="studio" aria-label="Atlas Studio interactive demo">
+      <div className="studio-shell">
+        <div className="studio-toolbar">
+          <div className="studio-brand"><LogoMark /><span>ATLAS STUDIO</span><i>BETA</i></div>
+          <div className="mode-tabs">
+            {['Scene', 'Objects', 'Simulate', 'Reason'].map(item => <button className={mode === item ? 'active' : ''} onClick={() => setMode(item)} key={item}>{item}</button>)}
+          </div>
+          <button className={`reconstruct-button ${reconstructing ? 'loading' : ''}`} onClick={reconstruct} disabled={reconstructing}>
+            {reconstructing ? 'Reconstructing…' : complete ? 'Reconstructed ✓' : 'Reconstruct scene'}
+          </button>
+        </div>
+
+        <div className="studio-body">
+          <aside className="studio-sidebar source-panel">
+            <div className="panel-title">SOURCE</div>
+            <label className="image-upload">
+              {sourceImage ? <img src={sourceImage} alt="Uploaded source" /> : <><SparkIcon /><strong>Load a source image</strong><small>JPG or PNG · single view</small></>}
+              <input type="file" accept="image/png,image/jpeg" onChange={loadImage} />
+            </label>
+            <div className="source-meta"><span>Input</span><b>{sourceImage ? 'Custom image' : 'Workshop sample'}</b></div>
+            <div className="source-meta"><span>Output</span><b>Metric 3D scene</b></div>
+            <div className="layer-controls">
+              <div className="panel-title">LAYERS</div>
+              {Object.entries(layers).map(([key, value]) => (
+                <label key={key}><span>{key}</span><input type="checkbox" checked={value} onChange={() => setLayers(current => ({ ...current, [key]: !current[key] }))} /><i /></label>
+              ))}
+            </div>
+          </aside>
+
+          <div className={`scene-viewport mode-${mode.toLowerCase()} ${complete ? 'is-complete' : ''}`}>
+            {sourceImage && <div className="source-wash" style={{ backgroundImage: `url(${sourceImage})` }} />}
+            <div className="viewport-grid" />
+            <div className="demo-platform">
+              <button className={`demo-mesh mesh-table ${selected === 'workbench' ? 'selected' : ''}`} onClick={() => setSelected('workbench')} aria-label="Select workbench" />
+              <button className={`demo-mesh mesh-robot ${selected === 'robot' ? 'selected' : ''}`} onClick={() => setSelected('robot')} aria-label="Select robot arm"><i /><i /><i /></button>
+              <button className={`demo-mesh mesh-crate ${selected === 'crate' ? 'selected' : ''}`} onClick={() => setSelected('crate')} aria-label="Select crate" />
+              {layers.path && <div className="motion-path"><i /><i /><i /></div>}
+              {layers.labels && <><span className="mesh-label robot-label">ROBOT_ARM_01</span><span className="mesh-label table-label">WORKBENCH_01</span></>}
+            </div>
+            <div className="viewport-top"><span><i /> {reconstructing ? 'PROCESSING SOURCE' : complete ? 'SCENE READY' : 'SAMPLE SCENE'}</span><span>METRIC / 1:1</span></div>
+            <div className="axis-widget"><b>Y</b><i /><em>X</em><span>Z</span></div>
+            {mode === 'Simulate' && <div className="simulation-notice"><span /> Motion planning active</div>}
+            {mode === 'Reason' && <form className="reason-box" onSubmit={askScene}><label>ASK THE SCENE</label><div><input value={question} onChange={event => setQuestion(event.target.value)} /><button type="submit"><Arrow /></button></div><p>{answer}</p></form>}
+          </div>
+
+          <aside className="studio-sidebar objects-panel">
+            <div className="panel-title">SCENE OBJECTS <b>{demoObjects.length}</b></div>
+            <div className="object-list">
+              {demoObjects.map(object => (
+                <button className={selected === object.id ? 'active' : ''} key={object.id} onClick={() => setSelected(object.id)}>
+                  <i /><span><strong>{object.name}</strong><small>{object.type}</small></span><em>{object.confidence}</em>
+                </button>
+              ))}
+            </div>
+            <div className="object-inspector">
+              <div className="panel-title">SELECTION</div>
+              <h3>{demoObjects.find(object => object.id === selected)?.name || 'Scene object'}</h3>
+              <dl><div><dt>Position</dt><dd>1.24, 0.82, 2.10 m</dd></div><div><dt>Scale</dt><dd>Real world / metric</dd></div><div><dt>Mesh</dt><dd>Editable</dd></div></dl>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function StudioPage() {
+  return <main className="atlas-studio-page"><DemoStudio /></main>
+}
+
+function WaitlistPage() {
+  const [form, setForm] = useState({ waitlistEmail: '', name: '', pilotEmail: '', company: '', useCase: '' })
+  const [submitted, setSubmitted] = useState({ waitlist: false, pilot: false })
+
+  const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
+
+  const submitAccess = (type) => (event) => {
+    event.preventDefault()
+    setSubmitted(current => ({ ...current, [type]: true }))
+  }
+
+  return (
+    <main className="waitlist-page">
+      <Header />
+      <section className="waitlist-hero">
+        <div className="waitlist-intro">
+          <h1>Join the Atlas<br /><em>waitlist.</em></h1>
+          <p>Get early access to Atlas, the image-to-3D system for building editable, simulation-ready environments from a single photograph.</p>
+          {submitted.waitlist ? <div className="signup-confirmation" role="status">You’re on the list. We’ll be in touch.</div> : (
+            <form className="waitlist-signup" onSubmit={submitAccess('waitlist')}>
+              <input aria-label="Email address" name="waitlistEmail" type="email" value={form.waitlistEmail} onChange={updateField} placeholder="Enter your email address" required />
+              <button type="submit">Sign up <Arrow /></button>
+            </form>
+          )}
+        </div>
+
+        <section className="pilot-request" aria-labelledby="pilot-title">
+          <div className="access-or">or</div>
+          <h2 id="pilot-title">Request a pilot.</h2>
+          <p>Need to reconstruct a real environment for robotics, simulation, spatial AI, or 3D production? Tell us about the scene and the outcome you need.</p>
+          <a className="button pilot-request-button" href="/contact">Request a pilot <Arrow /></a>
+          <a className="pilot-email" href="mailto:hello@primisintelligence.com">hello@primisintelligence.com</a>
+        </section>
+      </section>
+    </main>
+  )
+}
+
+function ContactPage() {
+  const [form, setForm] = useState({ name: '', company: '', email: '', useCase: '' })
+  const [submitted, setSubmitted] = useState(false)
+  const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
+  const submitContact = (event) => { event.preventDefault(); setSubmitted(true) }
+
+  return (
+    <main className="inner-page contact-page">
+      <Header />
+      <section className="contact-form-section">
+        {submitted ? (
+          <div className="contact-confirmation" role="status"><span>MESSAGE RECEIVED</span><h2>Thank you.</h2><p>We’ll review your request and get back to you shortly.</p></div>
+        ) : (
+          <form className="contact-form" onSubmit={submitContact}>
+            <div className="contact-form-heading"><h2>Start a conversation.</h2></div>
+            <div className="contact-fields">
+              <div><label>Name<input name="name" value={form.name} onChange={updateField} placeholder="Your name" required /></label><label>Company<input name="company" value={form.company} onChange={updateField} placeholder="Company" required /></label></div>
+              <label>Work email<input name="email" type="email" value={form.email} onChange={updateField} placeholder="you@company.com" required /></label>
+              <label>How can Atlas help?<textarea name="useCase" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
+              <button type="submit">Send request <Arrow /></button>
+            </div>
+          </form>
+        )}
+        <div className="contact-direct"><span>OR EMAIL US DIRECTLY</span><a href="mailto:hello@primisintelligence.com">hello@primisintelligence.com</a></div>
+      </section>
+      <SiteFooter />
+    </main>
+  )
+}
+
+function LegalPage({ type }) {
+  const isPrivacy = type === 'privacy'
+
+  useEffect(() => {
+    document.title = `${isPrivacy ? 'Privacy Policy' : 'Impressum'} · Primis`
+    return () => { document.title = 'Primis' }
+  }, [isPrivacy])
+
+  return (
+    <main className="inner-page legal-page">
+      <Header />
+      <article className="legal-document">
+        <a className="legal-back" href="/">← Back to Primis</a>
+        {isPrivacy ? (
+          <>
+            <h1>Privacy Policy</h1>
+            <p className="legal-subtitle">Datenschutzerklärung — last updated 22 June 2026</p>
+
+            <h2>1. Controller</h2>
+            <p>The controller responsible for data processing on this website (Art. 4(7) GDPR) is:</p>
+            <address>
+              Primis Intelligence UG (haftungsbeschränkt)<br />
+              Am Karnweg 53<br />
+              63322 Rödermark, Germany<br />
+              Represented by the managing director: Vladislav Praznik<br />
+              Phone: <a href="tel:+4917647152968">+49 176 47152968</a><br />
+              Email: <a href="mailto:info@primisintelligence.com">info@primisintelligence.com</a>
+            </address>
+
+            <h2>2. Overview</h2>
+            <p>We process personal data only where there is a legal basis to do so and to the extent necessary to provide this website. This page explains what data we collect, why, on what legal basis, and what rights you have.</p>
+
+            <h2>3. Hosting &amp; server log files</h2>
+            <p>This site is hosted on IONOS Deploy Now by IONOS SE, Elgendorfer Straße 57, 56410 Montabaur, Germany. When you visit, your browser automatically transmits data that the server stores in log files: IP address, date and time of the request, the page requested, referrer URL, browser type and operating system. This is necessary for secure, stable operation.</p>
+            <p>Legal basis: Art. 6(1)(f) GDPR (legitimate interest in operating the site securely). Logs are retained only as long as necessary for security and stable operation and are then deleted. A data processing agreement (Art. 28 GDPR) is in place with the host.</p>
+
+            <h2>4. Cookies &amp; tracking</h2>
+            <p>This website uses <strong>only technically necessary</strong> data and currently sets no analytics, advertising, or tracking cookies. Should we add any non-essential cookies or tracking in future, we will request your prior consent via a consent banner (§ 25(1) TDDDG, Art. 6(1)(a) GDPR) and update this policy.</p>
+
+            <h2>5. Fonts</h2>
+            <p>Fonts are <strong>self-hosted</strong> on our own server. No font data is requested from, or transmitted to, Google or any third party when you load this site.</p>
+
+            <h2>6. Contacting us</h2>
+            <p>If you contact us (e.g. by email or via the contact link), the data you provide is used solely to handle your request. Legal basis: Art. 6(1)(b) GDPR (pre-contractual / contractual) or Art. 6(1)(f) GDPR (legitimate interest in responding). We delete this data once it is no longer required and no legal retention periods apply.</p>
+
+            <h2>7. Your rights</h2>
+            <p>Under the GDPR you have the right to:</p>
+            <ul>
+              <li>access your personal data (Art. 15)</li>
+              <li>rectification (Art. 16) and erasure (Art. 17)</li>
+              <li>restriction of processing (Art. 18)</li>
+              <li>data portability (Art. 20)</li>
+              <li>object to processing based on legitimate interest (Art. 21)</li>
+              <li>withdraw consent at any time, with effect for the future (Art. 7(3))</li>
+            </ul>
+            <p>To exercise any of these, contact us at <a href="mailto:info@primisintelligence.com">info@primisintelligence.com</a>.</p>
+
+            <h2>8. Right to complain</h2>
+            <p>You have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR). The authority competent for us (Hesse) is:</p>
+            <address>
+              Der Hessische Beauftragte für Datenschutz und Informationsfreiheit<br />
+              Postfach 3163, 65021 Wiesbaden<br />
+              <a href="https://datenschutz.hessen.de" target="_blank" rel="noreferrer">datenschutz.hessen.de</a>
+            </address>
+
+            <h2>9. Encryption</h2>
+            <p>This site uses SSL/TLS encryption (HTTPS) to protect data transmitted between your browser and our server.</p>
+
+            <h2>10. Changes</h2>
+            <p>We may update this policy to reflect changes to the site or the law. The current version is always available on this page.</p>
+          </>
+        ) : (
+          <>
+            <h1>Impressum</h1>
+
+            <h2>Angaben gemäß § 5 DDG</h2>
+            <address>
+              Primis Intelligence UG (haftungsbeschränkt)<br />
+              Am Karnweg 53<br />
+              63322 Rödermark<br />
+              Deutschland
+            </address>
+            <p>
+              Vertreten durch den Geschäftsführer: Vladislav Praznik<br />
+              Registergericht: Amtsgericht Offenbach am Main<br />
+              Handelsregisternummer: HRB 59072
+            </p>
+
+            <h2>Kontakt</h2>
+            <p>
+              Telefon: <a href="tel:+4917647152968">+49 176 47152968</a><br />
+              E-Mail: <a href="mailto:info@primisintelligence.com">info@primisintelligence.com</a>
+            </p>
+
+            <h2>Redaktionell verantwortlich (§ 18 Abs. 2 MStV)</h2>
+            <address>Vladislav Praznik<br />Am Karnweg 53, 63322 Rödermark</address>
+
+            <h2>Verbraucherstreitbeilegung</h2>
+            <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+
+            <h2>Haftung für Inhalte</h2>
+            <p>Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
+
+            <h2>Haftung für Links</h2>
+            <p>Unser Angebot enthält ggf. Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.</p>
+
+            <h2>Urheberrecht</h2>
+            <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Beiträge Dritter sind als solche gekennzeichnet.</p>
+          </>
+        )}
+      </article>
+      <footer className="legal-footer">
+        <span>© 2026 Primis</span>
+        <nav aria-label="Legal navigation"><a href="/impressum">Impressum</a><a href="/privacy">Datenschutz</a><a href="/">Home</a></nav>
+      </footer>
+    </main>
+  )
+}
+
+const worldCatalog = [
+  { name: 'Frontier Basin', family: 'Connected terrain', prompt: 'A traversable world with layered terrain, connected waterways, open plains and elevated regions.' },
+  { name: 'Granite Reach', family: 'Mountain corridor', prompt: 'A high-relief world organized around ridges, passes and sheltered valleys.' },
+  { name: 'Delta Fields', family: 'River network', prompt: 'A broad landscape shaped by branching channels, islands and low-lying terrain.' },
+  { name: 'Verdant Shelf', family: 'Forest plateau', prompt: 'A raised green shelf with dense boundaries, open clearings and connected paths.' },
+  { name: 'North Passage', family: 'Coastal terrain', prompt: 'A continuous coastal world with cliffs, inlets and navigable interior regions.' },
+  { name: 'Glasswater', family: 'Lake district', prompt: 'An open world structured around linked lakes, narrow crossings and rolling terrain.' },
+  { name: 'Ember Caldera', family: 'Volcanic basin', prompt: 'A circular basin with steep walls, radial routes and a complex central depression.' },
+  { name: 'Saffron Divide', family: 'Desert shelf', prompt: 'A dry layered world with terraces, channels and long-range lines of sight.' },
+  { name: 'Hollow Ring', family: 'Circular terrain', prompt: 'A ring-shaped environment with interior paths, vertical transitions and enclosed space.' },
+  { name: 'Meadow Run', family: 'Open watershed', prompt: 'A gently graded watershed with clear movement corridors and distant boundaries.' },
+  { name: 'Slate Expanse', family: 'Structural study', prompt: 'A neutral world study focused on scale, topology and spatial continuity.' }
+]
+
+function PlaceholderTerrain({ compact = false, variant = 0, channel = '' }) {
+  return (
+    <div className={`placeholder-terrain ${compact ? 'is-compact' : ''} ${channel}`} data-variant={variant % 5}>
+      <div className="terrain-plane">
+        <i className="terrain-ridge ridge-a" /><i className="terrain-ridge ridge-b" /><i className="terrain-ridge ridge-c" />
+        <i className="terrain-river" />
+        <div className="terrain-blocks">{Array.from({ length: 14 }, (_, index) => <b key={index} />)}</div>
+      </div>
+    </div>
+  )
+}
+
+function WorldViewPlaceholder({ index, type }) {
+  return (
+    <div className={`world-view-placeholder ${type} view-${index}`}>
+      <span>{String(index).padStart(2, '0')}</span>
+      <div className="world-view-ground"><i /><i /><i /><i /><i /><i /></div>
+    </div>
+  )
+}
+
+function WorldsGallery() {
+  const [activeWorld, setActiveWorld] = useState(0)
+  const [viewMode, setViewMode] = useState('orbit')
+  const featuredWorlds = worldCatalog.slice(0, 5)
+  const world = featuredWorlds[activeWorld]
+  const views = {
+    orbit: { label: 'Orbit', description: 'Read the complete terrain, boundaries, and connected regions from above.' },
+    walk: { label: 'Walk', description: 'Move through the world at ground level and inspect it at human scale.' },
+    data: { label: 'Spatial data', description: 'Inspect the geometry, object structure, depth, and traversable areas beneath the render.' }
+  }
+  const channels = [
+    { slug: 'surface', index: 0, eyebrow: '01 / GEOMETRY', title: 'Editable surface', text: 'Connected terrain and scene geometry form the physical structure of the world.' },
+    { slug: 'semantic', index: 1, eyebrow: '02 / SEMANTICS', title: 'Named regions', text: 'Objects and areas remain individually addressable instead of being flattened into one image.' },
+    { slug: 'depth', index: 2, eyebrow: '03 / SCALE', title: 'Metric depth', text: 'Depth and scale preserve the distances required by simulation and physical reasoning.' },
+    { slug: 'traversability', index: 3, eyebrow: '04 / ACTION', title: 'Traversable space', text: 'Open routes and boundaries reveal where an agent can move and act.' }
+  ]
+
+  return (
+    <section className="world-exhibition">
+      <header className="world-exhibition-intro">
+        <div className="world-exhibition-title">
+          <h1>Worlds built<br /><em>to be explored.</em></h1>
+        </div>
+        <p>Atlas generates connected 3D environments that can be viewed, edited, measured, and used as working spatial models.</p>
+      </header>
+
+      <div className="world-stage">
+        <div className="world-stage-model" aria-label={`Placeholder 3D model for ${world.name}`}>
+          <div className="world-stage-chip"><LogoMark /><span>PLACEHOLDER MODEL</span></div>
+          <PlaceholderTerrain variant={activeWorld} />
+          <div className="world-stage-axis" aria-hidden="true"><i /><b>X</b><em>Y</em><span>Z</span></div>
+        </div>
+
+        <aside className="world-stage-details">
+          <div className="world-stage-meta"><span>{String(activeWorld + 1).padStart(2, '0')} / {String(featuredWorlds.length).padStart(2, '0')}</span><span>{world.family}</span></div>
+          <h2>{world.name}</h2>
+          <p className="world-stage-prompt">{world.prompt}</p>
+          <div className="world-view-tabs" role="tablist" aria-label="World viewing mode">
+            {Object.entries(views).map(([slug, view]) => <button key={slug} role="tab" aria-selected={viewMode === slug} className={viewMode === slug ? 'active' : ''} onClick={() => setViewMode(slug)}>{view.label}</button>)}
+          </div>
+          <div className={`world-selected-view mode-${viewMode}`}>
+            {viewMode === 'data' ? <PlaceholderTerrain variant={activeWorld} channel="channel-semantic" /> : <WorldViewPlaceholder index={activeWorld % 3 + 1} type={viewMode} />}
+          </div>
+          <p className="world-view-description">{views[viewMode].description}</p>
+        </aside>
+      </div>
+
+      <section className="world-library" aria-labelledby="world-library-title">
+        <div className="world-library-heading"><h2 id="world-library-title">Choose an environment.</h2><p>Each placeholder represents a different spatial structure. Real generated models can replace these directly.</p></div>
+        <div className="world-library-grid" aria-label="Select world">
+          {featuredWorlds.map((item, index) => (
+            <button className={activeWorld === index ? 'active' : ''} onClick={() => setActiveWorld(index)} key={item.name} aria-label={`Show ${item.name}`}>
+              <div><PlaceholderTerrain compact variant={index} /></div>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{item.name}</strong>
+              <small>{item.family}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="world-data" aria-labelledby="world-data-title">
+        <header><h2 id="world-data-title">More than a render.</h2><p>The same generated environment can expose the spatial information needed by editors, simulators, and intelligent agents.</p></header>
+        <div className="world-data-grid">
+          {channels.map(channel => (
+            <article key={channel.slug}>
+              <div className="world-data-visual"><PlaceholderTerrain variant={activeWorld + channel.index} channel={`channel-${channel.slug}`} /></div>
+              <div className="world-data-copy"><span>{channel.eyebrow}</span><h3>{channel.title}</h3><p>{channel.text}</p></div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </section>
+  )
+}
+
+function WorldsPage() {
+  return (
+    <main className="inner-page worlds-page">
+      <Header />
+      <WorldsGallery />
+      <SiteFooter />
+    </main>
+  )
+}
+
+function App() {
+  const path = window.location.pathname.replace(/\/$/, '') || '/'
+  const researchArticle = path.startsWith('/research/') ? researchArticles.find(article => article.slug === path.slice('/research/'.length)) : null
+  useEffect(() => {
+    if (window.location.hash) {
+      window.requestAnimationFrame(() => document.querySelector(window.location.hash)?.scrollIntoView())
+    }
+  }, [path])
+  if (path === '/about') return <AboutPage />
+  if (researchArticle) return <ResearchArticlePage article={researchArticle} />
+  if (path === '/research') return <ResearchPage />
+  if (path === '/worlds') return <WorldsPage />
+  if (path === '/studio') return <WaitlistPage />
+  if (path === '/contact') return <ContactPage />
+  if (path === '/impressum' || path === '/impressum.html') return <LegalPage type="impressum" />
+  if (path === '/privacy' || path === '/datenschutz' || path === '/datenschutz.html') return <LegalPage type="privacy" />
+  return <main><Header /><Hero /><LiveDemoPreview /><Vision /><AtlasOverview /><SiteFooter /></main>
+}
+
+createRoot(document.getElementById('root')).render(<App />)
