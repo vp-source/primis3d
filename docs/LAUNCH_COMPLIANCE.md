@@ -26,8 +26,10 @@ hosting, forms, tracking, or email use changes.
 - Deployment jobs receive only the named IONOS credentials they require; no
   workflow step dynamically indexes or serialises the repository secret set.
 - Secret scanning, push protection, Dependabot alerts and security updates,
-  and weekly extended CodeQL analysis are enabled. The initial CodeQL analysis
-  of the application and Actions workflows returned no alerts.
+  and weekly extended CodeQL analysis are enabled. CodeQL found one workflow
+  secret-exposure issue during hardening; it was fixed by replacing dynamic
+  secret lookup with the one named deployment credential. The current analysis
+  has no open alerts.
 - The `main` branch rejects force-pushes and deletion.
 - A security contact is published at `/.well-known/security.txt`.
 
