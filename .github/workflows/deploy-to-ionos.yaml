@@ -80,14 +80,6 @@ jobs:
             sed -i "$file" -e 's|https://IONOS_DEPLOY_NOW_SITE_URL|${{ fromJson(steps.deployment.outputs.info).site-url }}|g'
           done < <(grep -rlZ -- 'https://IONOS_DEPLOY_NOW_SITE_URL' . || true)
 
-      - name: Render SSH user secret name
-        env:
-          DEPLOYMENT_ID: ${{ matrix.deployment-id }}
-        run: |
-          secret_suffix="${DEPLOYMENT_ID^^}"
-          secret_suffix="${secret_suffix//-/_}"
-          echo "SSH_USERNAME_SECRET=IONOS_DEPLOYMENT_${secret_suffix}_SSH_USERNAME" >> "$GITHUB_ENV"
-
       - name: Deploy to IONOS
         uses: ionos-deploy-now/deploy-to-ionos-action@452884710a8fec9421c32d6c8ab2c69566703b02 # v2
         with:
@@ -97,7 +89,7 @@ jobs:
           branch-id: ${{ inputs.branch-id }}
           deployment-id: ${{ matrix.deployment-id }}
           deployment-info: ${{ steps.deployment.outputs.info }}
-          ssh-user: ${{ secrets[env.SSH_USERNAME_SECRET] }}
+          ssh-user: ${{ secrets.IONOS_DEPLOYMENT_A88384DB_912A_4E76_A166_D6812BA88D8E_SSH_USERNAME }}
           ssh-key: ${{ secrets.IONOS_SSH_KEY }}
 
       - name: Update deployment status

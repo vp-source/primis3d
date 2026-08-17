@@ -23,6 +23,8 @@ hosting, forms, tracking, or email use changes.
   commit-SHA pinned.
 - GitHub Actions is limited to GitHub-owned actions and the four exact IONOS
   action revisions used by the deployment workflows.
+- Deployment jobs receive only the named IONOS credentials they require; no
+  workflow step dynamically indexes or serialises the repository secret set.
 - Secret scanning, push protection, Dependabot alerts and security updates,
   and weekly extended CodeQL analysis are enabled. The initial CodeQL analysis
   of the application and Actions workflows returned no alerts.
