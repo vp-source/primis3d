@@ -21,7 +21,13 @@ hosting, forms, tracking, or email use changes.
   retention are documented in the Privacy Policy.
 - Dependencies are version-pinned and audited; external GitHub Actions are
   commit-SHA pinned.
-- Secret scanning and push protection are enabled.
+- GitHub Actions is limited to GitHub-owned actions and the four exact IONOS
+  action revisions used by the deployment workflows.
+- Secret scanning, push protection, Dependabot alerts and security updates,
+  and weekly extended CodeQL analysis are enabled. The initial CodeQL analysis
+  of the application and Actions workflows returned no alerts.
+- The `main` branch rejects force-pushes and deletion.
+- A security contact is published at `/.well-known/security.txt`.
 
 ## Waitlist operating procedure
 
@@ -41,6 +47,10 @@ hosting, forms, tracking, or email use changes.
 
 - Confirm that the IONOS data-processing agreement (AVV under Art. 28 GDPR) is
   active in the company account and retain a copy privately.
+- Repeat the official EU VIES validation for `DE464025288` and retain the
+  validation receipt. Its German checksum passed locally on 18 August 2026,
+  but the VIES request could not complete because the German member-state
+  service returned `MS_UNAVAILABLE`.
 - Complete the evidence fields in `docs/ASSET_PROVENANCE.md`; store licences,
   releases, and source/generation records in a private company-controlled
   folder rather than this public repository.

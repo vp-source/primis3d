@@ -45,3 +45,17 @@ included there as well.
    or confidential interfaces in public demos without explicit written rights.
 4. Complete DPMA, EUIPO, and WIPO similarity searches for `Primis`, `Atlas`,
    and the Primis mark before treating the brand as cleared.
+
+## Repository custody record
+
+The current media set was imported into this repository in commit
+`f81df3545e078ae76b38d7c7a95ce1c593713663` and carried into the public
+`primis3d` history in commit
+`923e6b832ea8382755ed8c492440bb35626dc1a5`. The shared legacy files
+(`cap-*`, `founder.jpg`, `games-desert.jpg`, `primis-demo.mp4`, and
+`robotics-g1b.jpg`) first appear in the legacy repository in commit
+`f0c144eb398c7a62417eedbe2223ed7dd7079c3f`.
+
+These commits establish repository custody only. They do not prove authorship,
+licensing, model consent, or trademark clearance; the evidence fields above
+must still be completed from the original source records.
