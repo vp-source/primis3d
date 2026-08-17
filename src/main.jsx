@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 
+const CONTACT_EMAIL = 'info@primis3d.com'
+const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
+function openEmailDraft(subject, body) {
+  const query = `subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  window.location.href = `mailto:${CONTACT_EMAIL}?${query}`
+}
+
 const Arrow = ({ down = false }) => (
   <svg viewBox="0 0 20 20" aria-hidden="true">
     {down ? <path d="M10 4v11m0 0 4-4m-4 4-4-4" /> : <path d="M5 15 15 5m0 0H8m7 0v7" />}
@@ -71,7 +79,7 @@ function Hero() {
         <div className="hero-copy">
           <h1><span>From one photo</span><br /><em>to a 3D world.</em></h1>
           <h2>Editable. Measurable. Ready to simulate.</h2>
-          <p>Atlas reconstructs a single photograph as a 3D scene, estimates real-world scale, identifies each object, and prepares the result for robotics, simulation, or any 3D pipeline.</p>
+          <p>Atlas is being built to turn a single photograph into an editable 3D scene, with estimated scale, object structure, and outputs for robotics, simulation, and 3D workflows.</p>
         </div>
         <WorldPlaceholder />
       </div>
@@ -81,29 +89,33 @@ function Hero() {
 
 function LiveDemoPreview() {
   const demoStart = 7.6
+  const reduceMotion = prefersReducedMotion()
 
   return (
     <section className="home-live-demo" id="live-demo">
       <div className="home-live-demo-heading">
         <h2>See a photo<br />become a world.</h2>
-        <p>Drop in a single image and watch Atlas reconstruct it as a fully editable, to-scale 3D world. Inspect the geometry, object labels, and scene structure as every element is placed, named, and prepared for editing—captured live in Atlas Studio.</p>
+        <p>This development capture shows the current Atlas Studio workflow rebuilding a single image as structured 3D geometry, object labels, and an editable scene. Outputs remain under development and vary with the source image.</p>
       </div>
-      <div className="home-live-demo-frame" aria-label="Atlas reconstruction demonstration">
+      <figure className="home-live-demo-frame">
         <video
           className="home-demo-video"
-          autoPlay
+          autoPlay={!reduceMotion}
           muted
           playsInline
+          controls
           preload="metadata"
+          aria-label="Atlas Studio development reconstruction demonstration"
           onLoadedMetadata={(event) => { event.currentTarget.currentTime = demoStart }}
           onEnded={(event) => {
             event.currentTarget.currentTime = demoStart
-            event.currentTarget.play()
+            if (!reduceMotion) event.currentTarget.play()
           }}
         >
           <source src="/assets/primis-demo-trimmed.webm" type="video/webm" />
         </video>
-      </div>
+        <figcaption className="sr-only">A development capture of Atlas Studio reconstructing a photograph into a structured 3D scene.</figcaption>
+      </figure>
     </section>
   )
 }
@@ -112,14 +124,14 @@ function Vision() {
   return (
     <section className="vision" id="about">
       <div className="vision-grid">
-        <div className="visual-card" id="demo" aria-label="Abstract world visualization">
+        <div className="visual-card" id="demo">
           <img className="section-art" src="/assets/primis-world-model-v4.png" alt="A minimal office represented as a structured spatial world model" />
         </div>
         <article className="statement-card" id="research-simulation">
           <div className="statement-copy">
             <h3>The foundation everything<br /><em>else is built on.</em></h3>
             <p>Spatial intelligence and simulation are only as capable as the worlds they run in.</p>
-            <p>We build that foundation: autonomous, labeled world generation that turns raw capture into metric, simulation-ready scenes, every object named, placed, and editable.</p>
+            <p>We are building that foundation: autonomous, labeled world generation designed to turn raw capture into metric, simulation-ready scenes with objects named, placed, and editable.</p>
           </div>
           <div className="statement-bottom">
             <a className="button button-coral" href="/worlds">Explore worlds <Arrow /></a>
@@ -277,7 +289,7 @@ function AboutPage() {
             <h3>Vladislav Praznik</h3>
             <p>Primis is built by a robotics builder and multimodal AI researcher from Germany. The company grew from work close to search-and-rescue robotics, industrial technology and the people who need spatial systems to work outside the lab.</p>
             <p>The conviction is simple: while everyone races to build intelligence on top, the foundational layer that lets machines understand and act in the physical world is still missing.</p>
-            <a className="button button-ghost" href="mailto:hello@primisintelligence.com">Talk to Primis <Arrow /></a>
+            <a className="button button-ghost" href={`mailto:${CONTACT_EMAIL}`}>Talk to Primis <Arrow /></a>
           </div>
         </div>
       </section>
@@ -304,7 +316,7 @@ function ResearchPage() {
             <div className="research-publication-meta"><span>{article.number}</span><span>{article.category}</span></div>
             <h2>{article.title}</h2>
             <p>{article.deck}</p>
-            <span className="research-publication-link">Read research <Arrow /></span>
+            <span className="research-publication-link">Read direction <Arrow /></span>
           </a>
         ))}
       </section>
@@ -315,10 +327,11 @@ function ResearchPage() {
 
 function ResearchMedia({ media, className = '' }) {
   if (!media) return null
+  const reduceMotion = prefersReducedMotion()
   return (
     <figure className={`research-story-media ${media.fit === 'contain' ? 'media-contain' : ''} ${className}`}>
       {media.type === 'video'
-        ? <video autoPlay muted loop playsInline preload="metadata"><source src={media.src} type="video/mp4" /></video>
+        ? <video autoPlay={!reduceMotion} muted loop playsInline controls preload="metadata" aria-label={media.caption || 'Primis research development media'}><source src={media.src} type="video/mp4" /></video>
         : <img src={media.src} alt="" />}
       {media.caption && <figcaption>{media.caption}</figcaption>}
     </figure>
@@ -339,7 +352,7 @@ function ResearchArticlePage({ article }) {
       <article className="research-story">
         <ResearchMedia media={article.hero} className="research-story-hero-media" />
         <header className="research-story-heading">
-          <div><span>PRIMIS RESEARCH / 2026</span><span>{article.category}</span></div>
+          <div><span>PRIMIS RESEARCH DIRECTION / 2026</span><span>{article.category}</span></div>
           <p>{article.deck}</p>
           <h1>{article.title}</h1>
         </header>
@@ -396,7 +409,7 @@ function SiteFooter() {
       <div className="footer-bottom">
         <a className="brand" href="/"><LogoMark /><span>Primis</span></a>
         <p>© 2026 PRIMIS INTELLIGENCE<br />BUILDING THE FOUNDATION FOR SPATIAL INTELLIGENCE.</p>
-        <div><a href="mailto:hello@primisintelligence.com">EMAIL</a><a href="/impressum">IMPRINT</a><a href="/privacy">PRIVACY</a></div>
+        <div><a href={`mailto:${CONTACT_EMAIL}`}>EMAIL</a><a href="/impressum">IMPRINT</a><a href="/privacy">PRIVACY</a><a href="/THIRD_PARTY_NOTICES.txt">LICENSES</a></div>
       </div>
     </footer>
   )
@@ -413,7 +426,7 @@ function AtlasOverview() {
       <div className="overview-intro">
         <span className="section-index">ATLAS</span>
         <h2>One image.<br />Many working worlds.</h2>
-        <p>Atlas produces editable geometry, real-world scale, labeled objects, and a scene that can be loaded into simulation or a standard 3D workflow.</p>
+        <p>Atlas is being designed to produce editable geometry, estimated real-world scale, labeled objects, and scenes for simulation or standard 3D workflows.</p>
       </div>
       <div className="overview-cards">
         {researchStories.map(story => (
@@ -540,14 +553,23 @@ function StudioPage() {
 }
 
 function WaitlistPage() {
-  const [form, setForm] = useState({ waitlistEmail: '', name: '', pilotEmail: '', company: '', useCase: '' })
-  const [submitted, setSubmitted] = useState({ waitlist: false, pilot: false })
+  const [waitlistEmail, setWaitlistEmail] = useState('')
+  const [draftOpened, setDraftOpened] = useState(false)
 
-  const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
-
-  const submitAccess = (type) => (event) => {
+  const submitAccess = (event) => {
     event.preventDefault()
-    setSubmitted(current => ({ ...current, [type]: true }))
+    const email = waitlistEmail.trim()
+    openEmailDraft(
+      'Atlas one-time launch notification',
+      [
+        'Please add me to the Atlas one-time launch notification list.',
+        '',
+        `Notification address: ${email}`,
+        '',
+        'I consent to Primis using this address only to send me one email when Atlas first launches. I can withdraw this request at any time.',
+      ].join('\n'),
+    )
+    setDraftOpened(true)
   }
 
   return (
@@ -556,13 +578,14 @@ function WaitlistPage() {
       <section className="waitlist-hero">
         <div className="waitlist-intro">
           <h1>Join the Atlas<br /><em>waitlist.</em></h1>
-          <p>Get early access to Atlas, the image-to-3D system for building editable, simulation-ready environments from a single photograph.</p>
-          {submitted.waitlist ? <div className="signup-confirmation" role="status">You’re on the list. We’ll be in touch.</div> : (
-            <form className="waitlist-signup" onSubmit={submitAccess('waitlist')}>
-              <input aria-label="Email address" name="waitlistEmail" type="email" value={form.waitlistEmail} onChange={updateField} placeholder="Enter your email address" required />
-              <button type="submit">Sign up <Arrow /></button>
-            </form>
-          )}
+          <p>Ask Primis to send you one email when the first public Atlas release is available. No recurring product marketing.</p>
+          <form className="waitlist-signup" onSubmit={submitAccess}>
+            <label className="sr-only" htmlFor="waitlist-email">Email address</label>
+            <input id="waitlist-email" name="waitlistEmail" type="email" autoComplete="email" maxLength="254" value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="Enter your email address" required />
+            <button type="submit">Sign up <Arrow /></button>
+          </form>
+          <p className="form-privacy-note">Signing up opens a prepared message in your email app. Send it to complete your request. We use the address once for the Atlas launch notice, then delete it. <a href="/privacy">Privacy details</a>.</p>
+          {draftOpened && <p className="mail-draft-status" role="status">Your email app should now be open. Send the prepared message to finish joining.</p>}
         </div>
 
         <section className="pilot-request" aria-labelledby="pilot-title">
@@ -570,37 +593,55 @@ function WaitlistPage() {
           <h2 id="pilot-title">Request a pilot.</h2>
           <p>Need to reconstruct a real environment for robotics, simulation, spatial AI, or 3D production? Tell us about the scene and the outcome you need.</p>
           <a className="button pilot-request-button" href="/contact">Request a pilot <Arrow /></a>
-          <a className="pilot-email" href="mailto:hello@primisintelligence.com">hello@primisintelligence.com</a>
+          <a className="pilot-email" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
         </section>
       </section>
+      <footer className="waitlist-legal-footer">
+        <span>© 2026 Primis</span>
+        <nav aria-label="Legal navigation"><a href="/impressum">Impressum</a><a href="/privacy">Datenschutz</a><a href="/THIRD_PARTY_NOTICES.txt">Licenses</a><a href={`mailto:${CONTACT_EMAIL}`}>Contact</a></nav>
+      </footer>
     </main>
   )
 }
 
 function ContactPage() {
   const [form, setForm] = useState({ name: '', company: '', email: '', useCase: '' })
-  const [submitted, setSubmitted] = useState(false)
+  const [draftOpened, setDraftOpened] = useState(false)
   const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
-  const submitContact = (event) => { event.preventDefault(); setSubmitted(true) }
+  const submitContact = (event) => {
+    event.preventDefault()
+    const name = form.name.trim()
+    const company = form.company.trim()
+    openEmailDraft(
+      `Atlas enquiry${name ? ` from ${name}` : ''}`,
+      [
+        `Name: ${name || 'Not provided'}`,
+        `Company: ${company || 'Not provided'}`,
+        `Reply email: ${form.email.trim()}`,
+        '',
+        'Project or research goal:',
+        form.useCase.trim(),
+      ].join('\n'),
+    )
+    setDraftOpened(true)
+  }
 
   return (
     <main className="inner-page contact-page">
       <Header />
       <section className="contact-form-section">
-        {submitted ? (
-          <div className="contact-confirmation" role="status"><span>MESSAGE RECEIVED</span><h2>Thank you.</h2><p>We’ll review your request and get back to you shortly.</p></div>
-        ) : (
-          <form className="contact-form" onSubmit={submitContact}>
-            <div className="contact-form-heading"><h2>Start a conversation.</h2></div>
-            <div className="contact-fields">
-              <div><label>Name<input name="name" value={form.name} onChange={updateField} placeholder="Your name" required /></label><label>Company<input name="company" value={form.company} onChange={updateField} placeholder="Company" required /></label></div>
-              <label>Work email<input name="email" type="email" value={form.email} onChange={updateField} placeholder="you@company.com" required /></label>
-              <label>How can Atlas help?<textarea name="useCase" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
-              <button type="submit">Send request <Arrow /></button>
-            </div>
-          </form>
-        )}
-        <div className="contact-direct"><span>OR EMAIL US DIRECTLY</span><a href="mailto:hello@primisintelligence.com">hello@primisintelligence.com</a></div>
+        <form className="contact-form" onSubmit={submitContact}>
+          <div className="contact-form-heading"><h2>Start a conversation.</h2></div>
+          <div className="contact-fields">
+            <div><label><span className="field-label">Name <small>optional</small></span><input name="name" autoComplete="name" maxLength="100" value={form.name} onChange={updateField} placeholder="Your name" /></label><label><span className="field-label">Company <small>optional</small></span><input name="company" autoComplete="organization" maxLength="120" value={form.company} onChange={updateField} placeholder="Company" /></label></div>
+            <label>Reply email<input name="email" type="email" autoComplete="email" maxLength="254" value={form.email} onChange={updateField} placeholder="you@company.com" required /></label>
+            <label>How can Atlas help?<textarea name="useCase" maxLength="1600" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
+            <p className="form-privacy-note form-privacy-note-light">This prepares an email in your own mail app; nothing is sent until you send it. Primis uses your details only to answer your enquiry. <a href="/privacy">Privacy details</a>.</p>
+            <button type="submit">Prepare email <Arrow /></button>
+            {draftOpened && <p className="mail-draft-status mail-draft-status-light" role="status">Your email app should now be open. Send the prepared message to deliver your request.</p>}
+          </div>
+        </form>
+        <div className="contact-direct"><span>OR EMAIL US DIRECTLY</span><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></div>
       </section>
       <SiteFooter />
     </main>
@@ -623,7 +664,7 @@ function LegalPage({ type }) {
         {isPrivacy ? (
           <>
             <h1>Privacy Policy</h1>
-            <p className="legal-subtitle">Datenschutzerklärung — last updated 22 June 2026</p>
+            <p className="legal-subtitle">Datenschutzerklärung — last updated 18 August 2026</p>
 
             <h2>1. Controller</h2>
             <p>The controller responsible for data processing on this website (Art. 4(7) GDPR) is:</p>
@@ -633,26 +674,34 @@ function LegalPage({ type }) {
               63322 Rödermark, Germany<br />
               Represented by the managing director: Vladislav Praznik<br />
               Phone: <a href="tel:+4917647152968">+49 176 47152968</a><br />
-              Email: <a href="mailto:info@primisintelligence.com">info@primisintelligence.com</a>
+              Email: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             </address>
 
-            <h2>2. Overview</h2>
-            <p>We process personal data only where there is a legal basis to do so and to the extent necessary to provide this website. This page explains what data we collect, why, on what legal basis, and what rights you have.</p>
+            <h2>2. Hosting &amp; server logs</h2>
+            <p>This site is hosted with IONOS Deploy Now by IONOS SE, Elgendorfer Straße 57, 56410 Montabaur, Germany. When the site is requested, the hosting infrastructure processes the IP address, access time, requested resource, referrer, browser and version, operating system, and device information so that it can deliver the site and detect technical or security problems.</p>
+            <p>IONOS states that IP addresses used for its visitor statistics are anonymised immediately and that raw log data may be available for up to eight weeks. The legal basis is Art. 6(1)(f) GDPR; our legitimate interests are the secure, reliable, and abuse-resistant operation of this website. IONOS acts as our processor under Art. 28 GDPR.</p>
 
-            <h2>3. Hosting &amp; server log files</h2>
-            <p>This site is hosted on IONOS Deploy Now by IONOS SE, Elgendorfer Straße 57, 56410 Montabaur, Germany. When you visit, your browser automatically transmits data that the server stores in log files: IP address, date and time of the request, the page requested, referrer URL, browser type and operating system. This is necessary for secure, stable operation.</p>
-            <p>Legal basis: Art. 6(1)(f) GDPR (legitimate interest in operating the site securely). Logs are retained only as long as necessary for security and stable operation and are then deleted. A data processing agreement (Art. 28 GDPR) is in place with the host.</p>
+            <h2>3. Cookies, analytics &amp; tracking</h2>
+            <p>This website currently sets no analytics, advertising, or tracking cookies and uses no analytics pixels or third-party tag managers. A consent banner is therefore not required for the current site. If this changes, we will obtain any consent required under § 25(1) TDDDG and Art. 6(1)(a) GDPR before activating non-essential technology and will update this policy.</p>
 
-            <h2>4. Cookies &amp; tracking</h2>
-            <p>This website uses <strong>only technically necessary</strong> data and currently sets no analytics, advertising, or tracking cookies. Should we add any non-essential cookies or tracking in future, we will request your prior consent via a consent banner (§ 25(1) TDDDG, Art. 6(1)(a) GDPR) and update this policy.</p>
+            <h2>4. Fonts &amp; media</h2>
+            <p>Fonts, images, and videos are served from our own hosting. Loading a normal page does not request fonts or embedded media from Google, YouTube, or another third-party platform.</p>
 
-            <h2>5. Fonts</h2>
-            <p>Fonts are <strong>self-hosted</strong> on our own server. No font data is requested from, or transmitted to, Google or any third party when you load this site.</p>
+            <h2>5. Atlas launch notification</h2>
+            <p>The waitlist form prepares an email in your own email application. Nothing is sent to Primis until you choose to send that message. If you send it, we process the notification address, message metadata, and your request solely to send <strong>one email</strong> when Atlas first becomes publicly available. We do not reuse the address for recurring product marketing.</p>
+            <p>The legal basis is your consent under Art. 6(1)(a) GDPR. You may withdraw at any time by emailing <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We delete the address after sending the one-time notice or after withdrawal. If Atlas has not launched within 24 months of your request, we delete it unless you renew your request. Limited retention may continue where necessary to establish or defend legal claims.</p>
 
-            <h2>6. Contacting us</h2>
-            <p>If you contact us (e.g. by email or via the contact link), the data you provide is used solely to handle your request. Legal basis: Art. 6(1)(b) GDPR (pre-contractual / contractual) or Art. 6(1)(f) GDPR (legitimate interest in responding). We delete this data once it is no longer required and no legal retention periods apply.</p>
+            <h2>6. Contact and pilot enquiries</h2>
+            <p>The contact form also prepares an email locally; it is not transmitted until you send it. If sent, we process your reply address, message, and any optional name or company information solely to answer the enquiry, discuss a pilot, or take steps requested before a contract.</p>
+            <p>The legal basis is Art. 6(1)(b) GDPR where your enquiry concerns pre-contractual or contractual steps, and otherwise Art. 6(1)(f) GDPR. Our legitimate interest is responding to relevant business and research enquiries. We normally delete enquiry data within six months after the final response unless a contract, statutory retention duty, or legal claim requires longer retention.</p>
 
-            <h2>7. Your rights</h2>
+            <h2>7. Recipients and international transfers</h2>
+            <p>Website hosting and email are provided by IONOS SE as our processor. We do not sell form or waitlist data. The current website does not intentionally transfer this data outside the European Economic Area. If we add another form, mailing, or infrastructure provider, we will identify that provider and any applicable transfer safeguard here before using it.</p>
+
+            <h2>8. Required information and automated decisions</h2>
+            <p>Providing information is voluntary. Without an email address we cannot send the launch notice or reply to an enquiry; optional fields may be left blank. We do not use this website data for automated decision-making or profiling.</p>
+
+            <h2>9. Your rights</h2>
             <p>Under the GDPR you have the right to:</p>
             <ul>
               <li>access your personal data (Art. 15)</li>
@@ -662,9 +711,12 @@ function LegalPage({ type }) {
               <li>object to processing based on legitimate interest (Art. 21)</li>
               <li>withdraw consent at any time, with effect for the future (Art. 7(3))</li>
             </ul>
-            <p>To exercise any of these, contact us at <a href="mailto:info@primisintelligence.com">info@primisintelligence.com</a>.</p>
+            <p>To exercise any of these rights, contact us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
 
-            <h2>8. Right to complain</h2>
+            <h2>10. Right to object</h2>
+            <p><strong>If we process your data on the basis of legitimate interests, you may object at any time for reasons arising from your particular situation (Art. 21 GDPR). If data were ever processed for direct marketing, you could object to that processing at any time without giving reasons.</strong></p>
+
+            <h2>11. Right to complain</h2>
             <p>You have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR). The authority competent for us (Hesse) is:</p>
             <address>
               Der Hessische Beauftragte für Datenschutz und Informationsfreiheit<br />
@@ -672,10 +724,10 @@ function LegalPage({ type }) {
               <a href="https://datenschutz.hessen.de" target="_blank" rel="noreferrer">datenschutz.hessen.de</a>
             </address>
 
-            <h2>9. Encryption</h2>
+            <h2>12. Encryption</h2>
             <p>This site uses SSL/TLS encryption (HTTPS) to protect data transmitted between your browser and our server.</p>
 
-            <h2>10. Changes</h2>
+            <h2>13. Changes</h2>
             <p>We may update this policy to reflect changes to the site or the law. The current version is always available on this page.</p>
           </>
         ) : (
@@ -698,8 +750,11 @@ function LegalPage({ type }) {
             <h2>Kontakt</h2>
             <p>
               Telefon: <a href="tel:+4917647152968">+49 176 47152968</a><br />
-              E-Mail: <a href="mailto:info@primisintelligence.com">info@primisintelligence.com</a>
+              E-Mail: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             </p>
+
+            <h2>Umsatzsteuer-Identifikationsnummer</h2>
+            <p>USt-IdNr. gemäß § 27a Umsatzsteuergesetz: DE464025288</p>
 
             <h2>Redaktionell verantwortlich (§ 18 Abs. 2 MStV)</h2>
             <address>Vladislav Praznik<br />Am Karnweg 53, 63322 Rödermark</address>
@@ -707,20 +762,14 @@ function LegalPage({ type }) {
             <h2>Verbraucherstreitbeilegung</h2>
             <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
-            <h2>Haftung für Inhalte</h2>
-            <p>Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
-
-            <h2>Haftung für Links</h2>
-            <p>Unser Angebot enthält ggf. Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.</p>
-
             <h2>Urheberrecht</h2>
-            <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Beiträge Dritter sind als solche gekennzeichnet.</p>
+            <p>Die von Primis erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Für verwendete Inhalte Dritter gelten die Rechte der jeweiligen Rechteinhaber.</p>
           </>
         )}
       </article>
       <footer className="legal-footer">
         <span>© 2026 Primis</span>
-        <nav aria-label="Legal navigation"><a href="/impressum">Impressum</a><a href="/privacy">Datenschutz</a><a href="/">Home</a></nav>
+        <nav aria-label="Legal navigation"><a href="/impressum">Impressum</a><a href="/privacy">Datenschutz</a><a href="/THIRD_PARTY_NOTICES.txt">Licenses</a><a href="/">Home</a></nav>
       </footer>
     </main>
   )
@@ -774,7 +823,7 @@ function WorldsGallery() {
   const channels = [
     { slug: 'surface', index: 0, eyebrow: '01 / GEOMETRY', title: 'Editable surface', text: 'Connected terrain and scene geometry form the physical structure of the world.' },
     { slug: 'semantic', index: 1, eyebrow: '02 / SEMANTICS', title: 'Named regions', text: 'Objects and areas remain individually addressable instead of being flattened into one image.' },
-    { slug: 'depth', index: 2, eyebrow: '03 / SCALE', title: 'Metric depth', text: 'Depth and scale preserve the distances required by simulation and physical reasoning.' },
+    { slug: 'depth', index: 2, eyebrow: '03 / SCALE', title: 'Metric depth', text: 'Estimated depth and scale are intended to preserve the distances required by simulation and physical reasoning.' },
     { slug: 'traversability', index: 3, eyebrow: '04 / ACTION', title: 'Traversable space', text: 'Open routes and boundaries reveal where an agent can move and act.' }
   ]
 
@@ -784,11 +833,11 @@ function WorldsGallery() {
         <div className="world-exhibition-title">
           <h1>Worlds built<br /><em>to be explored.</em></h1>
         </div>
-        <p>Atlas generates connected 3D environments that can be viewed, edited, measured, and used as working spatial models.</p>
+        <p>Atlas is designed to generate connected 3D environments that can be viewed, edited, measured, and used as working spatial models.</p>
       </header>
 
       <div className="world-stage">
-        <div className="world-stage-model" aria-label={`Placeholder 3D model for ${world.name}`}>
+        <div className="world-stage-model" role="img" aria-label={`Placeholder 3D model for ${world.name}`}>
           <div className="world-stage-chip"><LogoMark /><span>PLACEHOLDER MODEL</span></div>
           <PlaceholderTerrain variant={activeWorld} />
           <div className="world-stage-axis" aria-hidden="true"><i /><b>X</b><em>Y</em><span>Z</span></div>
@@ -799,9 +848,9 @@ function WorldsGallery() {
           <h2>{world.name}</h2>
           <p className="world-stage-prompt">{world.prompt}</p>
           <div className="world-view-tabs" role="tablist" aria-label="World viewing mode">
-            {Object.entries(views).map(([slug, view]) => <button key={slug} role="tab" aria-selected={viewMode === slug} className={viewMode === slug ? 'active' : ''} onClick={() => setViewMode(slug)}>{view.label}</button>)}
+            {Object.entries(views).map(([slug, view]) => <button id={`world-view-tab-${slug}`} aria-controls="world-view-panel" key={slug} role="tab" aria-selected={viewMode === slug} tabIndex={viewMode === slug ? 0 : -1} className={viewMode === slug ? 'active' : ''} onClick={() => setViewMode(slug)}>{view.label}</button>)}
           </div>
-          <div className={`world-selected-view mode-${viewMode}`}>
+          <div id="world-view-panel" className={`world-selected-view mode-${viewMode}`} role="tabpanel" aria-labelledby={`world-view-tab-${viewMode}`}>
             {viewMode === 'data' ? <PlaceholderTerrain variant={activeWorld} channel="channel-semantic" /> : <WorldViewPlaceholder index={activeWorld % 3 + 1} type={viewMode} />}
           </div>
           <p className="world-view-description">{views[viewMode].description}</p>
@@ -810,7 +859,7 @@ function WorldsGallery() {
 
       <section className="world-library" aria-labelledby="world-library-title">
         <div className="world-library-heading"><h2 id="world-library-title">Choose an environment.</h2><p>Each placeholder represents a different spatial structure. Real generated models can replace these directly.</p></div>
-        <div className="world-library-grid" aria-label="Select world">
+        <div className="world-library-grid" role="group" aria-label="Select world">
           {featuredWorlds.map((item, index) => (
             <button className={activeWorld === index ? 'active' : ''} onClick={() => setActiveWorld(index)} key={item.name} aria-label={`Show ${item.name}`}>
               <div><PlaceholderTerrain compact variant={index} /></div>
@@ -852,7 +901,13 @@ function App() {
   const researchArticle = path.startsWith('/research/') ? researchArticles.find(article => article.slug === path.slice('/research/'.length)) : null
   useEffect(() => {
     if (window.location.hash) {
-      window.requestAnimationFrame(() => document.querySelector(window.location.hash)?.scrollIntoView())
+      window.requestAnimationFrame(() => {
+        try {
+          document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView()
+        } catch {
+          // Ignore malformed URL fragments instead of interrupting the page.
+        }
+      })
     }
   }, [path])
   if (path === '/about') return <AboutPage />
