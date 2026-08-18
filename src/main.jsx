@@ -980,6 +980,49 @@ function WorldsPage() {
   )
 }
 
+function ConfirmWaitlistPage() {
+  const [message, setMessage] = useState('Confirming your email…')
+
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('t') || ''
+    if (!token) {
+      setMessage('This confirmation link is invalid.')
+      return
+    }
+
+    let active = true
+    fetch(`${FORM_API_URL}/api/waitlist/confirm`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token }),
+    })
+      .then(async (response) => {
+        const result = await response.json().catch(() => ({}))
+        if (!active) return
+        if (response.ok && result.status === 'confirmed') {
+          window.location.replace('/studio?waitlist=confirmed')
+          return
+        }
+        window.location.replace(`/studio?waitlist=${result.status === 'expired' ? 'expired' : 'invalid'}`)
+      })
+      .catch(() => {
+        if (active) setMessage('We could not confirm this email right now. Please try the link again shortly.')
+      })
+
+    return () => { active = false }
+  }, [])
+
+  return (
+    <main className="waitlist-page confirmation-gateway">
+      <Header />
+      <section className="confirmation-gateway-content" aria-live="polite">
+        <LogoMark />
+        <p>{message}</p>
+      </section>
+    </main>
+  )
+}
+
 function App() {
   const path = window.location.pathname.replace(/\/$/, '') || '/'
   const researchArticle = path.startsWith('/research/') ? researchArticles.find(article => article.slug === path.slice('/research/'.length)) : null
@@ -999,6 +1042,7 @@ function App() {
   if (path === '/research') return <ResearchPage />
   if (path === '/worlds') return <WorldsPage />
   if (path === '/studio') return <WaitlistPage />
+  if (path === '/confirm') return <ConfirmWaitlistPage />
   if (path === '/contact') return <ContactPage />
   if (path === '/impressum' || path === '/impressum.html') return <LegalPage type="impressum" />
   if (path === '/privacy' || path === '/datenschutz' || path === '/datenschutz.html') return <LegalPage type="privacy" />

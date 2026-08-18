@@ -1,6 +1,7 @@
 import { connect } from 'cloudflare:sockets'
 import { buildMimeMessage } from './mime.js'
 import { retentionCutoffs } from './retention.js'
+import { buildWaitlistConfirmationEmail } from './waitlist-email.js'
 
 const CONSENT_VERSION = 'atlas-launch-notice-v1-2026-08-18'
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
@@ -50,6 +51,10 @@ async function route(request, env) {
     body = await request.json()
   } catch {
     return json({ ok: false, error: 'invalid_request' }, 400, request, env)
+  }
+
+  if (url.pathname === '/api/waitlist/confirm') {
+    return confirmWaitlistToken(body.token, request, env)
   }
 
   if (typeof body.website === 'string' && body.website.trim()) {
@@ -126,25 +131,16 @@ async function submitWaitlist(body, request, env) {
       requested_at = excluded.requested_at, confirmed_at = NULL, consent_version = excluded.consent_version
   `).bind(email, tokenHash, requestedAt, CONSENT_VERSION).run()
 
-  const apiOrigin = new URL(request.url).origin
-  const confirmationUrl = `${apiOrigin}/api/waitlist/confirm?token=${encodeURIComponent(token)}`
-  const text = [
-    'Confirm your Atlas launch notification',
-    '',
-    'Someone entered this address to receive one email when Atlas first launches.',
-    'Confirm the request by opening this link:',
-    confirmationUrl,
-    '',
-    'If this was not you, ignore this email. The unconfirmed request will be deleted automatically.',
-    '',
-    'Primis Intelligence UG (haftungsbeschraenkt)',
-  ].join('\n')
+  const publicSite = env.PUBLIC_SITE_URL || 'https://primis3d.com'
+  const confirmationUrl = `${publicSite}/confirm?t=${encodeURIComponent(token)}`
+  const confirmationEmail = buildWaitlistConfirmationEmail(confirmationUrl)
 
   try {
     await sendEmail(env, {
       to: email,
-      subject: 'Confirm your Atlas launch notification',
-      text,
+      subject: 'One step away — confirm your Atlas place',
+      text: confirmationEmail.text,
+      html: confirmationEmail.html,
     })
   } catch (error) {
     await env.DB.prepare("DELETE FROM waitlist WHERE email = ? AND status = 'pending'").bind(email).run()
@@ -157,7 +153,17 @@ async function submitWaitlist(body, request, env) {
 async function confirmWaitlist(url, env) {
   const token = url.searchParams.get('token') || ''
   const redirectBase = env.PUBLIC_SITE_URL || 'https://primis3d.com'
-  if (!/^[A-Za-z0-9_-]{40,120}$/.test(token)) return Response.redirect(`${redirectBase}/studio?waitlist=invalid`, 303)
+  const result = await confirmToken(token, env)
+  return Response.redirect(`${redirectBase}/studio?waitlist=${result}`, 303)
+}
+
+async function confirmWaitlistToken(token, request, env) {
+  const result = await confirmToken(typeof token === 'string' ? token : '', env)
+  return json({ ok: result === 'confirmed', status: result }, result === 'confirmed' ? 200 : 400, request, env)
+}
+
+async function confirmToken(token, env) {
+  if (!/^[A-Za-z0-9_-]{40,120}$/.test(token)) return 'invalid'
 
   const tokenHash = await sha256(token)
   const record = await env.DB.prepare(`
@@ -165,20 +171,20 @@ async function confirmWaitlist(url, env) {
     WHERE confirmation_token_hash = ? AND status = 'pending'
   `).bind(tokenHash).first()
 
-  if (!record) return Response.redirect(`${redirectBase}/studio?waitlist=invalid`, 303)
+  if (!record) return 'invalid'
   if (Date.now() - Date.parse(record.requested_at) > 7 * 24 * 60 * 60 * 1000) {
     await env.DB.prepare("DELETE FROM waitlist WHERE confirmation_token_hash = ? AND status = 'pending'").bind(tokenHash).run()
-    return Response.redirect(`${redirectBase}/studio?waitlist=expired`, 303)
+    return 'expired'
   }
 
   await env.DB.prepare(`
     UPDATE waitlist SET status = 'confirmed', confirmed_at = ?, confirmation_token_hash = NULL
     WHERE confirmation_token_hash = ? AND status = 'pending'
   `).bind(new Date().toISOString(), tokenHash).run()
-  return Response.redirect(`${redirectBase}/studio?waitlist=confirmed`, 303)
+  return 'confirmed'
 }
 
-async function sendEmail(env, { to, subject, text, replyTo, replyToName }) {
+async function sendEmail(env, { to, subject, text, html, replyTo, replyToName }) {
   if (!env.SMTP_USERNAME || !env.SMTP_PASSWORD) throw new Error('IONOS SMTP credentials are not configured')
 
   const socket = connect(
@@ -201,6 +207,7 @@ async function sendEmail(env, { to, subject, text, replyTo, replyToName }) {
       to,
       subject,
       text,
+      html,
       replyTo,
       replyToName,
     }), [250])

@@ -1,4 +1,4 @@
-export function buildMimeMessage({ fromEmail, fromName, to, subject, text, replyTo, replyToName }) {
+export function buildMimeMessage({ fromEmail, fromName, to, subject, text, html, replyTo, replyToName }) {
   const asciiBody = isAscii(text)
   const headers = [
     `Date: ${new Date().toUTCString()}`,
@@ -7,10 +7,31 @@ export function buildMimeMessage({ fromEmail, fromName, to, subject, text, reply
     `To: <${to}>`,
     `Subject: ${encodeHeader(subject)}`,
     'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    `Content-Transfer-Encoding: ${asciiBody ? '7bit' : 'base64'}`,
   ]
   if (replyTo) headers.splice(4, 0, `Reply-To: ${replyToName ? `${encodeHeader(replyToName)} ` : ''}<${replyTo}>`)
+
+  if (html) {
+    const boundary = `primis_${crypto.randomUUID().replace(/-/g, '')}`
+    headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`)
+    const plainBody = asciiBody ? normalizeCrlf(text) : wrapBase64(base64Utf8(text))
+    const parts = [
+      `--${boundary}`,
+      'Content-Type: text/plain; charset=UTF-8',
+      `Content-Transfer-Encoding: ${asciiBody ? '7bit' : 'base64'}`,
+      '',
+      plainBody,
+      `--${boundary}`,
+      'Content-Type: text/html; charset=UTF-8',
+      'Content-Transfer-Encoding: base64',
+      '',
+      wrapBase64(base64Utf8(html)),
+      `--${boundary}--`,
+    ]
+    return `${headers.join('\r\n')}\r\n\r\n${parts.join('\r\n')}`
+  }
+
+  headers.push('Content-Type: text/plain; charset=UTF-8')
+  headers.push(`Content-Transfer-Encoding: ${asciiBody ? '7bit' : 'base64'}`)
   const body = asciiBody ? normalizeCrlf(text) : wrapBase64(base64Utf8(text))
   return `${headers.join('\r\n')}\r\n\r\n${body}`
 }

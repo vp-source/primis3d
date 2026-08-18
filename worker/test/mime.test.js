@@ -31,3 +31,20 @@ test('non-ASCII headers and content remain UTF-8 safe', () => {
   assert.match(message, /Content-Transfer-Encoding: base64/)
   assert.equal(encodeHeader('Primis'), 'Primis')
 })
+
+test('HTML mail is sent as multipart alternative with a plain-text fallback', () => {
+  const message = buildMimeMessage({
+    fromEmail: 'info@primis3d.com',
+    fromName: 'Primis',
+    to: 'person@example.com',
+    subject: 'Confirm your place',
+    text: 'Use https://primis3d.com/confirm?t=example',
+    html: '<html><body><a href="https://primis3d.com/confirm?t=example">Confirm my email</a></body></html>',
+  })
+
+  assert.match(message, /Content-Type: multipart\/alternative/)
+  assert.match(message, /Content-Type: text\/plain; charset=UTF-8/)
+  assert.match(message, /Content-Type: text\/html; charset=UTF-8/)
+  assert.match(message, /Content-Transfer-Encoding: base64/)
+  assert.match(message, /--primis_[a-f0-9]+--$/)
+})
