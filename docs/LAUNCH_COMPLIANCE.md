@@ -56,9 +56,10 @@ hosting, forms, tracking, or email use changes.
 - USt-IdNr. `DE464025288` passed its German checksum and was returned as valid
   by the official EU VIES service on 18 August 2026 at 07:25 UTC. Retain the
   original tax-office assignment notice as the primary company record.
-- Complete the evidence fields in `docs/ASSET_PROVENANCE.md`; store licences,
-  releases, and source/generation records in a private company-controlled
-  folder rather than this public repository.
+- The owner confirmed on 18 August 2026 that every deployed photograph, video,
+  render, and supplied visual reference belongs to Primis. The confirmation and
+  asset hashes are recorded in `docs/ASSET_PROVENANCE.md`; retain original
+  source/generation records in a private company-controlled folder.
 - Complete and retain DPMA, EUIPO, and WIPO similarity searches for `Primis`,
   `Atlas`, and the Primis symbol in the relevant software, AI, robotics, and 3D
   service classes. Escalate close matches to qualified trademark counsel.
@@ -68,11 +69,12 @@ hosting, forms, tracking, or email use changes.
 
 ## Email authentication rollout
 
-The domain currently publishes IONOS SPF and both IONOS DKIM selectors. DMARC
-is still monitoring-only (`p=none`). In IONOS DNS, move in controlled stages:
+The domain publishes IONOS SPF and both IONOS DKIM selectors. DMARC stage one
+was published on 18 August 2026 and verified directly against all four
+authoritative IONOS nameservers plus Google and Cloudflare public DNS:
 
-1. `v=DMARC1; p=quarantine; pct=25; rua=mailto:info@primis3d.com`
-2. Review reports and confirm every legitimate sender passes aligned SPF or
+1. Current: `v=DMARC1; p=quarantine; pct=25; rua=mailto:info@primis3d.com`
+2. Review aggregate reports and confirm every legitimate sender passes aligned SPF or
    DKIM, then raise `pct` to `100`.
 3. After a stable monitoring period, use
    `v=DMARC1; p=reject; rua=mailto:info@primis3d.com`.
