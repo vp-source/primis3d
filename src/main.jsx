@@ -145,11 +145,11 @@ function Vision() {
 const researchArticles = [
   {
     slug: 'spatial-intelligence', number: '01', category: 'SPATIAL INTELLIGENCE', title: 'Teaching machines to understand physical space',
-    deck: 'How Primis turns reconstructed scenes into world models that preserve scale, objects, relationships, visibility, and possible action.',
+    deck: 'How Primis investigates world models that preserve scale, objects, relationships, visibility, and possible action.',
     hero: { type: 'image', src: '/assets/primis-world-model-v4.png', fit: 'contain' }, indexImage: '/assets/primis-world-model-v4.png',
     overview: [
       'A useful spatial model must describe more than appearance. It needs to represent where surfaces begin and end, how large objects are, what contains what, which regions are visible, and where an agent can move.',
-      'Primis treats reconstruction as the first layer of spatial intelligence. Atlas converts visual capture into an editable environment whose geometry, semantics, and relationships can be inspected by people and reasoned over by machines.'
+      'Primis treats reconstruction as the first layer of spatial intelligence. Atlas is being designed to convert visual capture into an editable environment whose geometry, semantics, and relationships can be inspected by people and reasoned over by machines.'
     ],
     sections: [
       { title: 'From pixels to a world model', paragraphs: ['An image records projected light. A world model must recover structure: metric geometry, object boundaries, support relationships, free space, occlusion, and scene-level organization. Atlas is designed to keep those elements connected rather than producing an isolated visual asset.'] },
@@ -168,7 +168,7 @@ const researchArticles = [
       'Primis explores a different foundation: reconstruct a real scene, preserve its physical structure, and generate controlled variations in which a robot can repeatedly perceive, plan, move, and interact.'
     ],
     sections: [
-      { title: 'Breaking the fixed-scene barrier', paragraphs: ['Generalization requires experience across meaningful variation. The task should stay recognizable while distances, object placement, visibility, clutter, and routes change. Structured Atlas worlds make those factors editable instead of forcing researchers to rebuild each environment by hand.'] },
+      { title: 'Breaking the fixed-scene barrier', paragraphs: ['Generalization requires experience across meaningful variation. The task should stay recognizable while distances, object placement, visibility, clutter, and routes change. The goal for structured Atlas worlds is to make those factors editable instead of forcing researchers to rebuild each environment by hand.'] },
       { title: 'One capability, many worlds', paragraphs: ['A manipulation or navigation policy can be tested against multiple reconstructions of offices, workshops, homes, and industrial spaces. Failures can be traced back to geometry, perception, or planning rather than being hidden inside an opaque video dataset.'], points: ['Manipulation across changing object arrangements', 'Locomotion across unfamiliar floor plans', 'Perception under occlusion and viewpoint shifts', 'Planning with altered obstacles and reachable regions'] },
       { title: 'From rehearsal to transfer', paragraphs: ['The long-term aim is to let robots reason and generalize inside digital twins before acting in the physical world. Instead of learning one motion for one scene, a robot learns the spatial conditions under which an action remains valid.'] }
     ],
@@ -229,7 +229,7 @@ const researchArticles = [
     hero: { type: 'video', src: '/assets/cap-synthetic.mp4' }, indexImage: '/assets/cap-synthetic.jpg',
     overview: [
       'Spatial AI requires data that remains consistent across representations. An RGB frame, depth map, segmentation mask, camera pose, object graph, and 3D surface are most useful when they describe the same underlying world.',
-      'Atlas worlds provide a shared scene from which those channels can be rendered, modified, and evaluated together.'
+      'Atlas worlds are intended to provide a shared scene from which those channels can be rendered, modified, and evaluated together.'
     ],
     sections: [
       { title: 'Aligned by construction', paragraphs: ['Because outputs originate from one scene model, geometry and labels remain spatially registered. This supports evaluation across perception, reconstruction, scene understanding, and action planning tasks.'] },
