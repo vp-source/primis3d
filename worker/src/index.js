@@ -101,15 +101,19 @@ async function submitWaitlist(body, request, env) {
   const email = normalizeEmail(body.email)
   if (!email) return json({ ok: false, error: 'invalid_fields' }, 400, request, env)
 
+  const existing = await env.DB.prepare('SELECT status FROM waitlist WHERE email = ?').bind(email).first()
+  if (existing?.status === 'confirmed') {
+    return json({ ok: true, status: 'registered' }, 200, request, env)
+  }
+
   const fingerprint = await requestFingerprint(request, env)
   const [ipAllowed, emailAllowed] = await Promise.all([
     consumeRateLimit(env, `waitlist-ip:${fingerprint}`, 5, 60 * 60),
     consumeRateLimit(env, `waitlist-email:${await keyedHash(email, env.TOKEN_SECRET)}`, 2, 24 * 60 * 60),
   ])
-  if (!ipAllowed || !emailAllowed) return json({ ok: true }, 200, request, env)
-
-  const existing = await env.DB.prepare('SELECT status FROM waitlist WHERE email = ?').bind(email).first()
-  if (existing?.status === 'confirmed') return json({ ok: true }, 200, request, env)
+  if (!ipAllowed || !emailAllowed) {
+    return json({ ok: false, error: 'rate_limited' }, 429, request, env)
+  }
 
   const token = randomToken()
   const tokenHash = await sha256(token)
@@ -147,7 +151,7 @@ async function submitWaitlist(body, request, env) {
     throw error
   }
 
-  return json({ ok: true }, 200, request, env)
+  return json({ ok: true, status: 'confirmation_sent' }, 200, request, env)
 }
 
 async function confirmWaitlist(url, env) {

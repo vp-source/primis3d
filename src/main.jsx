@@ -612,13 +612,13 @@ function WaitlistPage() {
     setStatus('submitting')
     const data = new FormData(event.currentTarget)
     try {
-      await submitForm('/api/waitlist', {
+      const result = await submitForm('/api/waitlist', {
         email: waitlistEmail.trim(),
         website: data.get('website') || '',
         turnstileToken,
       })
       setWaitlistEmail('')
-      setStatus('pending')
+      setStatus(result.status === 'registered' ? 'registered' : 'confirmation_sent')
     } catch (error) {
       setStatus(error.message === 'rate_limited' ? 'rate_limited' : 'error')
     } finally {
@@ -643,8 +643,9 @@ function WaitlistPage() {
           <Turnstile theme="dark" onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
           <p className="form-privacy-note">We will email you a confirmation link. After confirmation, we use the address once for the Atlas launch notice and then delete it. <a href="/privacy">Privacy details</a>.</p>
           {verificationError && <p className="mail-draft-status form-error" role="alert">Browser verification was blocked. Allow challenges.cloudflare.com or email us directly.</p>}
-          {status === 'pending' && <div className="waitlist-delivery-status" role="status"><strong>Confirmation request received.</strong><span>If this address still needs confirmation, the email is on its way. If it is already confirmed, it remains registered and no duplicate is created. Check your inbox and spam folder.</span></div>}
-          {status === 'confirmed' && <p className="mail-draft-status" role="status">Your address is confirmed. We will contact you once when Atlas launches.</p>}
+          {status === 'registered' && <p className="mail-draft-status" role="status">This email is already registered.</p>}
+          {status === 'confirmation_sent' && <p className="mail-draft-status" role="status">A confirmation email has been sent.</p>}
+          {status === 'confirmed' && <p className="mail-draft-status" role="status">Your email has been confirmed.</p>}
           {status === 'expired' && <p className="mail-draft-status" role="status">That confirmation link expired. Enter your email again to receive a new one.</p>}
           {status === 'invalid' && <p className="mail-draft-status form-error" role="status">That confirmation link is invalid or has already been used.</p>}
           {status === 'error' && <p className="mail-draft-status form-error" role="alert">We could not process the request. Please try again shortly.</p>}
