@@ -47,4 +47,4 @@ The app password may be revoked independently in IONOS Webmail. The Worker never
 
 ## Retention
 
-Pending entries are deleted after seven days by the daily scheduled job. Confirmed entries stay until the one-time launch notification is sent or consent is withdrawn. After that notice is sent, delete the confirmed records. Contact messages are not stored in D1.
+Pending entries are deleted after seven days by the daily scheduled job. Confirmed entries are automatically deleted 24 months after confirmation unless they have already been removed following withdrawal or the one-time launch notification. After that notice is sent, delete all remaining confirmed records. Contact messages are not stored in D1.

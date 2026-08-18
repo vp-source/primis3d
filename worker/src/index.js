@@ -1,4 +1,5 @@
 import { connect } from 'cloudflare:sockets'
+import { retentionCutoffs } from './retention.js'
 
 const CONSENT_VERSION = 'atlas-launch-notice-v1-2026-08-18'
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
@@ -14,10 +15,10 @@ export default {
   },
 
   async scheduled(_controller, env) {
-    const pendingCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const rateCutoff = Math.floor(Date.now() / 1000) - 24 * 60 * 60
+    const { pendingCutoff, confirmedCutoff, rateCutoff } = retentionCutoffs()
     await env.DB.batch([
       env.DB.prepare("DELETE FROM waitlist WHERE status = 'pending' AND requested_at < ?").bind(pendingCutoff),
+      env.DB.prepare("DELETE FROM waitlist WHERE status = 'confirmed' AND confirmed_at < ?").bind(confirmedCutoff),
       env.DB.prepare('DELETE FROM rate_limits WHERE window_started_at < ?').bind(rateCutoff),
     ])
   },

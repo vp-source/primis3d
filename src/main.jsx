@@ -47,7 +47,7 @@ function Turnstile({ theme = 'light', onToken, onError, cycle = 0 }) {
       widgetId = turnstile.render(`#${containerId}`, {
         sitekey: TURNSTILE_SITE_KEY,
         theme,
-        size: 'flexible',
+        size: 'invisible',
         callback: (token) => { onError?.(false); onToken(token) },
         'expired-callback': () => onToken(''),
         'error-callback': () => { onToken(''); onError?.(true) },
@@ -650,7 +650,7 @@ function WaitlistPage() {
           <Turnstile theme="dark" onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
           <p className="form-privacy-note">We will email you a confirmation link. After confirmation, we use the address once for the Atlas launch notice and then delete it. <a href="/privacy">Privacy details</a>.</p>
           {verificationError && <p className="mail-draft-status form-error" role="alert">Browser verification was blocked. Allow challenges.cloudflare.com or email us directly.</p>}
-          {status === 'pending' && <p className="mail-draft-status" role="status">Check your inbox and confirm the address to join the waitlist.</p>}
+          {status === 'pending' && <div className="waitlist-delivery-status" role="status"><strong>Confirmation request received.</strong><span>If this address still needs confirmation, the email is on its way. If it is already confirmed, it remains registered and no duplicate is created. Check your inbox and spam folder.</span></div>}
           {status === 'confirmed' && <p className="mail-draft-status" role="status">Your address is confirmed. We will contact you once when Atlas launches.</p>}
           {status === 'expired' && <p className="mail-draft-status" role="status">That confirmation link expired. Enter your email again to receive a new one.</p>}
           {status === 'invalid' && <p className="mail-draft-status form-error" role="status">That confirmation link is invalid or has already been used.</p>}
