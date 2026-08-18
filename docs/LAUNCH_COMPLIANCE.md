@@ -51,10 +51,9 @@ hosting, forms, tracking, or email use changes.
 
 - Confirm that the IONOS data-processing agreement (AVV under Art. 28 GDPR) is
   active in the company account and retain a copy privately.
-- Repeat the official EU VIES validation for `DE464025288` and retain the
-  validation receipt. Its German checksum passed locally on 18 August 2026,
-  but the VIES request could not complete because the German member-state
-  service returned `MS_UNAVAILABLE`.
+- USt-IdNr. `DE464025288` passed its German checksum and was returned as valid
+  by the official EU VIES service on 18 August 2026 at 07:25 UTC. Retain the
+  original tax-office assignment notice as the primary company record.
 - Complete the evidence fields in `docs/ASSET_PROVENANCE.md`; store licences,
   releases, and source/generation records in a private company-controlled
   folder rather than this public repository.
