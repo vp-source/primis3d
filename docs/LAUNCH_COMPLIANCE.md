@@ -47,10 +47,12 @@ hosting, forms, tracking, or email use changes.
    delete requests after the 24-month period stated in the Privacy Policy
    unless the person renews the request.
 
-## Account and legal evidence still requiring a human record
+## Account and legal evidence
 
-- Confirm that the IONOS data-processing agreement (AVV under Art. 28 GDPR) is
-  active in the company account and retain a copy privately.
+- IONOS states that its AVV under Art. 28 GDPR has formed part of the IONOS
+  terms for new contracts since 19 July 2022. The Primis Deploy Now contract
+  was created in 2026, so no separate AVV signature is required. Retain the
+  applicable contract and AGB version privately.
 - USt-IdNr. `DE464025288` passed its German checksum and was returned as valid
   by the official EU VIES service on 18 August 2026 at 07:25 UTC. Retain the
   original tax-office assignment notice as the primary company record.
