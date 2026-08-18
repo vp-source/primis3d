@@ -1,4 +1,5 @@
 import { connect } from 'cloudflare:sockets'
+import { buildMimeMessage } from './mime.js'
 import { retentionCutoffs } from './retention.js'
 
 const CONSENT_VERSION = 'atlas-launch-notice-v1-2026-08-18'
@@ -264,25 +265,6 @@ class SmtpSession {
   }
 }
 
-function buildMimeMessage({ fromEmail, fromName, to, subject, text, replyTo, replyToName }) {
-  const headers = [
-    `Date: ${new Date().toUTCString()}`,
-    `Message-ID: <${crypto.randomUUID()}@primis3d.com>`,
-    `From: ${encodeHeader(fromName)} <${fromEmail}>`,
-    `To: <${to}>`,
-    `Subject: ${encodeHeader(subject)}`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-  ]
-  if (replyTo) headers.splice(4, 0, `Reply-To: ${replyToName ? `${encodeHeader(replyToName)} ` : ''}<${replyTo}>`)
-  return `${headers.join('\r\n')}\r\n\r\n${wrapBase64(base64Utf8(text))}`
-}
-
-function encodeHeader(value) {
-  return `=?UTF-8?B?${base64Utf8(String(value))}?=`
-}
-
 function base64Utf8(value) {
   const bytes = new TextEncoder().encode(String(value))
   let binary = ''
@@ -290,10 +272,6 @@ function base64Utf8(value) {
     binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000))
   }
   return btoa(binary)
-}
-
-function wrapBase64(value) {
-  return value.match(/.{1,76}/g)?.join('\r\n') || ''
 }
 
 async function verifyTurnstile(token, request, env) {
