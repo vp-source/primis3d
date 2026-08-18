@@ -26,3 +26,7 @@ pnpm-debug.log*
 Thumbs.db
 .idea/
 .vscode/
+
+# Cloudflare Worker local state and production binding configuration
+worker/.wrangler/
+worker/wrangler.toml

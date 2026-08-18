@@ -1,0 +1,29 @@
+name = "primis-forms"
+main = "src/index.js"
+compatibility_date = "2026-08-18"
+
+[vars]
+ALLOWED_ORIGINS = "https://primis3d.com,https://www.primis3d.com"
+CONTACT_RECIPIENT = "info@primis3d.com"
+MAIL_FROM_EMAIL = "info@primis3d.com"
+MAIL_FROM_NAME = "Primis"
+PUBLIC_SITE_URL = "https://primis3d.com"
+TURNSTILE_REQUIRED = "true"
+SMTP_HOST = "smtp.ionos.de"
+SMTP_PORT = "465"
+SMTP_EHLO_NAME = "primis3d.com"
+SMTP_USERNAME = "info@primis3d.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "primis-forms"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[triggers]
+crons = ["17 3 * * *"]
+
+# Add secrets through `wrangler secret put`; never write them here:
+# SMTP_PASSWORD       revocable IONOS app password, never the normal mailbox password
+# TOKEN_SECRET        random 32+ byte secret used to hash rate-limit identifiers
+# TURNSTILE_SECRET    required in production

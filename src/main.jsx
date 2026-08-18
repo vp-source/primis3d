@@ -3,11 +3,64 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 
 const CONTACT_EMAIL = 'info@primis3d.com'
+const FORM_API_URL = (import.meta.env.VITE_FORM_API_URL || 'https://primis-forms.primis3d-atlas-api.workers.dev').replace(/\/$/, '')
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAAETuH7GYM34LZwWL'
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-function openEmailDraft(subject, body) {
-  const query = `subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  window.location.href = `mailto:${CONTACT_EMAIL}?${query}`
+async function submitForm(path, payload) {
+  if (!FORM_API_URL) throw new Error('forms_unavailable')
+  const response = await fetch(`${FORM_API_URL}${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const result = await response.json().catch(() => ({}))
+  if (!response.ok || !result.ok) throw new Error(result.error || 'submission_failed')
+  return result
+}
+
+let turnstileLoader
+function loadTurnstile() {
+  if (window.turnstile) return Promise.resolve(window.turnstile)
+  if (turnstileLoader) return turnstileLoader
+  turnstileLoader = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve(window.turnstile)
+    script.onerror = () => reject(new Error('verification_unavailable'))
+    document.head.appendChild(script)
+  })
+  return turnstileLoader
+}
+
+function Turnstile({ theme = 'light', onToken, cycle = 0 }) {
+  const containerId = `turnstile-${React.useId().replace(/:/g, '')}`
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return undefined
+    let widgetId
+    let active = true
+    loadTurnstile().then((turnstile) => {
+      if (!active || !turnstile) return
+      widgetId = turnstile.render(`#${containerId}`, {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme,
+        size: 'flexible',
+        callback: (token) => onToken(token),
+        'expired-callback': () => onToken(''),
+        'error-callback': () => onToken(''),
+      })
+    }).catch(() => onToken(''))
+    return () => {
+      active = false
+      if (widgetId !== undefined && window.turnstile) window.turnstile.remove(widgetId)
+    }
+  }, [containerId, cycle, onToken, theme])
+
+  if (!TURNSTILE_SITE_KEY) return null
+  return <div className="turnstile-wrap" id={containerId} />
 }
 
 const Arrow = ({ down = false }) => (
@@ -554,22 +607,28 @@ function StudioPage() {
 
 function WaitlistPage() {
   const [waitlistEmail, setWaitlistEmail] = useState('')
-  const [draftOpened, setDraftOpened] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileCycle, setTurnstileCycle] = useState(0)
+  const [status, setStatus] = useState(() => new URLSearchParams(window.location.search).get('waitlist') || 'idle')
 
-  const submitAccess = (event) => {
+  const submitAccess = async (event) => {
     event.preventDefault()
-    const email = waitlistEmail.trim()
-    openEmailDraft(
-      'Atlas one-time launch notification',
-      [
-        'Please add me to the Atlas one-time launch notification list.',
-        '',
-        `Notification address: ${email}`,
-        '',
-        'I consent to Primis using this address only to send me one email when Atlas first launches. I can withdraw this request at any time.',
-      ].join('\n'),
-    )
-    setDraftOpened(true)
+    setStatus('submitting')
+    const data = new FormData(event.currentTarget)
+    try {
+      await submitForm('/api/waitlist', {
+        email: waitlistEmail.trim(),
+        website: data.get('website') || '',
+        turnstileToken,
+      })
+      setWaitlistEmail('')
+      setStatus('pending')
+    } catch (error) {
+      setStatus(error.message === 'rate_limited' ? 'rate_limited' : 'error')
+    } finally {
+      setTurnstileToken('')
+      setTurnstileCycle(current => current + 1)
+    }
   }
 
   return (
@@ -582,10 +641,17 @@ function WaitlistPage() {
           <form className="waitlist-signup" onSubmit={submitAccess}>
             <label className="sr-only" htmlFor="waitlist-email">Email address</label>
             <input id="waitlist-email" name="waitlistEmail" type="email" autoComplete="email" maxLength="254" value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="Enter your email address" required />
-            <button type="submit">Sign up <Arrow /></button>
+            <input className="form-honeypot" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" />
+            <button type="submit" disabled={status === 'submitting' || !turnstileToken}>{status === 'submitting' ? 'Sending…' : 'Sign up'} <Arrow /></button>
           </form>
-          <p className="form-privacy-note">Signing up opens a prepared message in your email app. Send it to complete your request. We use the address once for the Atlas launch notice, then delete it. <a href="/privacy">Privacy details</a>.</p>
-          {draftOpened && <p className="mail-draft-status" role="status">Your email app should now be open. Send the prepared message to finish joining.</p>}
+          <Turnstile theme="dark" onToken={setTurnstileToken} cycle={turnstileCycle} />
+          <p className="form-privacy-note">We will email you a confirmation link. After confirmation, we use the address once for the Atlas launch notice and then delete it. <a href="/privacy">Privacy details</a>.</p>
+          {status === 'pending' && <p className="mail-draft-status" role="status">Check your inbox and confirm the address to join the waitlist.</p>}
+          {status === 'confirmed' && <p className="mail-draft-status" role="status">Your address is confirmed. We will contact you once when Atlas launches.</p>}
+          {status === 'expired' && <p className="mail-draft-status" role="status">That confirmation link expired. Enter your email again to receive a new one.</p>}
+          {status === 'invalid' && <p className="mail-draft-status form-error" role="status">That confirmation link is invalid or has already been used.</p>}
+          {status === 'error' && <p className="mail-draft-status form-error" role="alert">We could not process the request. Please try again shortly.</p>}
+          {status === 'rate_limited' && <p className="mail-draft-status form-error" role="alert">Please wait before trying again.</p>}
         </div>
 
         <section className="pilot-request" aria-labelledby="pilot-title">
@@ -606,24 +672,31 @@ function WaitlistPage() {
 
 function ContactPage() {
   const [form, setForm] = useState({ name: '', company: '', email: '', useCase: '' })
-  const [draftOpened, setDraftOpened] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileCycle, setTurnstileCycle] = useState(0)
+  const [status, setStatus] = useState('idle')
   const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
-  const submitContact = (event) => {
+  const submitContact = async (event) => {
     event.preventDefault()
-    const name = form.name.trim()
-    const company = form.company.trim()
-    openEmailDraft(
-      `Atlas enquiry${name ? ` from ${name}` : ''}`,
-      [
-        `Name: ${name || 'Not provided'}`,
-        `Company: ${company || 'Not provided'}`,
-        `Reply email: ${form.email.trim()}`,
-        '',
-        'Project or research goal:',
-        form.useCase.trim(),
-      ].join('\n'),
-    )
-    setDraftOpened(true)
+    setStatus('submitting')
+    const data = new FormData(event.currentTarget)
+    try {
+      await submitForm('/api/contact', {
+        name: form.name.trim(),
+        company: form.company.trim(),
+        email: form.email.trim(),
+        message: form.useCase.trim(),
+        website: data.get('website') || '',
+        turnstileToken,
+      })
+      setForm({ name: '', company: '', email: '', useCase: '' })
+      setStatus('sent')
+    } catch (error) {
+      setStatus(error.message === 'rate_limited' ? 'rate_limited' : 'error')
+    } finally {
+      setTurnstileToken('')
+      setTurnstileCycle(current => current + 1)
+    }
   }
 
   return (
@@ -636,9 +709,13 @@ function ContactPage() {
             <div><label><span className="field-label">Name <small>optional</small></span><input name="name" autoComplete="name" maxLength="100" value={form.name} onChange={updateField} placeholder="Your name" /></label><label><span className="field-label">Company <small>optional</small></span><input name="company" autoComplete="organization" maxLength="120" value={form.company} onChange={updateField} placeholder="Company" /></label></div>
             <label>Reply email<input name="email" type="email" autoComplete="email" maxLength="254" value={form.email} onChange={updateField} placeholder="you@company.com" required /></label>
             <label>How can Atlas help?<textarea name="useCase" maxLength="1600" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
-            <p className="form-privacy-note form-privacy-note-light">This prepares an email in your own mail app; nothing is sent until you send it. Primis uses your details only to answer your enquiry. <a href="/privacy">Privacy details</a>.</p>
-            <button type="submit">Prepare email <Arrow /></button>
-            {draftOpened && <p className="mail-draft-status mail-draft-status-light" role="status">Your email app should now be open. Send the prepared message to deliver your request.</p>}
+            <input className="form-honeypot" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" />
+            <Turnstile onToken={setTurnstileToken} cycle={turnstileCycle} />
+            <p className="form-privacy-note form-privacy-note-light">Primis uses your details only to deliver and answer this enquiry. <a href="/privacy">Privacy details</a>.</p>
+            <button type="submit" disabled={status === 'submitting' || !turnstileToken}>{status === 'submitting' ? 'Sending…' : 'Send enquiry'} <Arrow /></button>
+            {status === 'sent' && <p className="mail-draft-status mail-draft-status-light" role="status">Your enquiry was delivered to Primis.</p>}
+            {status === 'error' && <p className="mail-draft-status mail-draft-status-light form-error" role="alert">The enquiry could not be delivered. Please try again or email us directly.</p>}
+            {status === 'rate_limited' && <p className="mail-draft-status mail-draft-status-light form-error" role="alert">Please wait before sending another enquiry.</p>}
           </div>
         </form>
         <div className="contact-direct"><span>OR EMAIL US DIRECTLY</span><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></div>
@@ -682,21 +759,22 @@ function LegalPage({ type }) {
             <p>IONOS states that IP addresses used for its visitor statistics are anonymised immediately and that raw log data may be available for up to eight weeks. The legal basis is Art. 6(1)(f) GDPR; our legitimate interests are the secure, reliable, and abuse-resistant operation of this website. IONOS acts as our processor under Art. 28 GDPR.</p>
 
             <h2>3. Cookies, analytics &amp; tracking</h2>
-            <p>This website currently sets no analytics, advertising, or tracking cookies and uses no analytics pixels or third-party tag managers. A consent banner is therefore not required for the current site. If this changes, we will obtain any consent required under § 25(1) TDDDG and Art. 6(1)(a) GDPR before activating non-essential technology and will update this policy.</p>
+            <p>This website sets no analytics or advertising cookies and uses no analytics pixels or third-party tag managers. Forms are protected against automated abuse with Cloudflare Turnstile. When a protected form is displayed or used, Cloudflare processes technical connection and device information to determine whether the request is legitimate. We use this strictly for website and form security on the basis of Art. 6(1)(f) GDPR; our legitimate interest is preventing spam and abuse. It is not used by Primis for advertising or visitor profiling.</p>
 
             <h2>4. Fonts &amp; media</h2>
             <p>Fonts, images, and videos are served from our own hosting. Loading a normal page does not request fonts or embedded media from Google, YouTube, or another third-party platform.</p>
 
             <h2>5. Atlas launch notification</h2>
-            <p>The waitlist form prepares an email in your own email application. Nothing is sent to Primis until you choose to send that message. If you send it, we process the notification address, message metadata, and your request solely to send <strong>one email</strong> when Atlas first becomes publicly available. We do not reuse the address for recurring product marketing.</p>
-            <p>The legal basis is your consent under Art. 6(1)(a) GDPR. You may withdraw at any time by emailing <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We delete the address after sending the one-time notice or after withdrawal. If Atlas has not launched within 24 months of your request, we delete it unless you renew your request. Limited retention may continue where necessary to establish or defend legal claims.</p>
+            <p>If you request the Atlas launch notification, we process your email address solely to send <strong>one email</strong> when Atlas first becomes publicly available. We first send a confirmation link to verify that the address belongs to the person making the request. Unconfirmed requests are deleted after seven days. We do not reuse the address for recurring product marketing.</p>
+            <p>The legal basis is your consent under Art. 6(1)(a) GDPR. You may withdraw at any time by emailing <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We delete a confirmed address after sending the one-time notice or after withdrawal. If Atlas has not launched within 24 months of confirmation, we delete it unless you renew your request. Limited retention may continue where necessary to establish or defend legal claims.</p>
 
             <h2>6. Contact and pilot enquiries</h2>
-            <p>The contact form also prepares an email locally; it is not transmitted until you send it. If sent, we process your reply address, message, and any optional name or company information solely to answer the enquiry, discuss a pilot, or take steps requested before a contract.</p>
+            <p>If you use the contact form, we process your reply address, message, and any optional name or company information solely to deliver and answer the enquiry, discuss a pilot, or take steps requested before a contract. The website form service does not retain the content in the waitlist database; it is transmitted as an email to Primis.</p>
             <p>The legal basis is Art. 6(1)(b) GDPR where your enquiry concerns pre-contractual or contractual steps, and otherwise Art. 6(1)(f) GDPR. Our legitimate interest is responding to relevant business and research enquiries. We normally delete enquiry data within six months after the final response unless a contract, statutory retention duty, or legal claim requires longer retention.</p>
 
             <h2>7. Recipients and international transfers</h2>
-            <p>Website hosting and email are provided by IONOS SE as our processor. We do not sell form or waitlist data. The current website does not intentionally transfer this data outside the European Economic Area. If we add another form, mailing, or infrastructure provider, we will identify that provider and any applicable transfer safeguard here before using it.</p>
+            <p>Website hosting, the Primis mailbox, and transactional email delivery are provided by IONOS SE. Form requests are processed by Cloudflare, Inc. through Cloudflare Workers and Turnstile; confirmed waitlist addresses are stored in a Cloudflare D1 database restricted to the European Union. These providers act as processors for the stated purposes.</p>
+            <p>Cloudflare operates a global network and some technical processing may occur outside the European Economic Area. Where a transfer to a country without an adequacy decision occurs, it is covered by the provider's data processing terms and applicable safeguards, including standard contractual clauses. We do not sell form or waitlist data.</p>
 
             <h2>8. Required information and automated decisions</h2>
             <p>Providing information is voluntary. Without an email address we cannot send the launch notice or reply to an enquiry; optional fields may be left blank. We do not use this website data for automated decision-making or profiling.</p>
