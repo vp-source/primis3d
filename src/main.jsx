@@ -47,7 +47,6 @@ function Turnstile({ theme = 'light', onToken, onError, cycle = 0 }) {
       widgetId = turnstile.render(`#${containerId}`, {
         sitekey: TURNSTILE_SITE_KEY,
         theme,
-        size: 'invisible',
         callback: (token) => { onError?.(false); onToken(token) },
         'expired-callback': () => onToken(''),
         'error-callback': () => { onToken(''); onError?.(true) },
