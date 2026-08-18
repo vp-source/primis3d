@@ -71,10 +71,9 @@ const Arrow = ({ down = false }) => (
 )
 
 const LogoMark = () => (
-  <svg className="logo-mark" viewBox="0 0 112 40" aria-hidden="true">
-    <path d="M17 17a14 14 0 0 1 28 0M45 23a14 14 0 0 1-28 0" />
-    <path d="M4 20h89" />
-    <circle cx="106" cy="20" r="2.25" />
+  <svg className="logo-mark" viewBox="0 0 96 100" aria-hidden="true">
+    <path d="M48 2C43 20 34 31 21 40l10 6c8-7 14-15 17-22 3 7 9 15 17 22l10-6C62 31 53 20 48 2Z" />
+    <path d="M4 55c21 2 35 13 44 35 9-22 23-33 44-35-21 10-35 22-44 41C39 77 25 65 4 55Z" />
   </svg>
 )
 
