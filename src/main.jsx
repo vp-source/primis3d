@@ -35,7 +35,7 @@ function loadTurnstile() {
   return turnstileLoader
 }
 
-function Turnstile({ theme = 'light', onToken, cycle = 0 }) {
+function Turnstile({ theme = 'light', onToken, onError, cycle = 0 }) {
   const containerId = `turnstile-${React.useId().replace(/:/g, '')}`
 
   useEffect(() => {
@@ -48,16 +48,18 @@ function Turnstile({ theme = 'light', onToken, cycle = 0 }) {
         sitekey: TURNSTILE_SITE_KEY,
         theme,
         size: 'flexible',
-        callback: (token) => onToken(token),
+        callback: (token) => { onError?.(false); onToken(token) },
         'expired-callback': () => onToken(''),
-        'error-callback': () => onToken(''),
+        'error-callback': () => { onToken(''); onError?.(true) },
+        'timeout-callback': () => { onToken(''); onError?.(true) },
+        'unsupported-callback': () => { onToken(''); onError?.(true) },
       })
-    }).catch(() => onToken(''))
+    }).catch(() => { onToken(''); onError?.(true) })
     return () => {
       active = false
       if (widgetId !== undefined && window.turnstile) window.turnstile.remove(widgetId)
     }
-  }, [containerId, cycle, onToken, theme])
+  }, [containerId, cycle, onError, onToken, theme])
 
   if (!TURNSTILE_SITE_KEY) return null
   return <div className="turnstile-wrap" id={containerId} />
@@ -608,6 +610,7 @@ function StudioPage() {
 function WaitlistPage() {
   const [waitlistEmail, setWaitlistEmail] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [verificationError, setVerificationError] = useState(false)
   const [turnstileCycle, setTurnstileCycle] = useState(0)
   const [status, setStatus] = useState(() => new URLSearchParams(window.location.search).get('waitlist') || 'idle')
 
@@ -644,8 +647,9 @@ function WaitlistPage() {
             <input className="form-honeypot" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" />
             <button type="submit" disabled={status === 'submitting' || !turnstileToken}>{status === 'submitting' ? 'Sending…' : 'Sign up'} <Arrow /></button>
           </form>
-          <Turnstile theme="dark" onToken={setTurnstileToken} cycle={turnstileCycle} />
+          <Turnstile theme="dark" onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
           <p className="form-privacy-note">We will email you a confirmation link. After confirmation, we use the address once for the Atlas launch notice and then delete it. <a href="/privacy">Privacy details</a>.</p>
+          {verificationError && <p className="mail-draft-status form-error" role="alert">Browser verification was blocked. Allow challenges.cloudflare.com or email us directly.</p>}
           {status === 'pending' && <p className="mail-draft-status" role="status">Check your inbox and confirm the address to join the waitlist.</p>}
           {status === 'confirmed' && <p className="mail-draft-status" role="status">Your address is confirmed. We will contact you once when Atlas launches.</p>}
           {status === 'expired' && <p className="mail-draft-status" role="status">That confirmation link expired. Enter your email again to receive a new one.</p>}
@@ -673,6 +677,7 @@ function WaitlistPage() {
 function ContactPage() {
   const [form, setForm] = useState({ name: '', company: '', email: '', useCase: '' })
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [verificationError, setVerificationError] = useState(false)
   const [turnstileCycle, setTurnstileCycle] = useState(0)
   const [status, setStatus] = useState('idle')
   const updateField = (event) => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
@@ -710,8 +715,9 @@ function ContactPage() {
             <label>Reply email<input name="email" type="email" autoComplete="email" maxLength="254" value={form.email} onChange={updateField} placeholder="you@company.com" required /></label>
             <label>How can Atlas help?<textarea name="useCase" maxLength="1600" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
             <input className="form-honeypot" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" />
-            <Turnstile onToken={setTurnstileToken} cycle={turnstileCycle} />
+            <Turnstile onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
             <p className="form-privacy-note form-privacy-note-light">Primis uses your details only to deliver and answer this enquiry. <a href="/privacy">Privacy details</a>.</p>
+            {verificationError && <p className="mail-draft-status mail-draft-status-light form-error" role="alert">Browser verification was blocked. Allow challenges.cloudflare.com or email us directly.</p>}
             <button type="submit" disabled={status === 'submitting' || !turnstileToken}>{status === 'submitting' ? 'Sending…' : 'Send enquiry'} <Arrow /></button>
             {status === 'sent' && <p className="mail-draft-status mail-draft-status-light" role="status">Your enquiry was delivered to Primis.</p>}
             {status === 'error' && <p className="mail-draft-status mail-draft-status-light form-error" role="alert">The enquiry could not be delivered. Please try again or email us directly.</p>}
