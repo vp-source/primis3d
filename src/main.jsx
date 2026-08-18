@@ -70,12 +70,19 @@ const Arrow = ({ down = false }) => (
   </svg>
 )
 
-const LogoMark = () => (
-  <svg className="logo-mark" viewBox="0 0 96 100" aria-hidden="true">
-    <path d="M48 2C43 20 34 31 21 40l7 4c9-7 16-16 20-25 4 9 11 18 20 25l7-4C62 31 53 20 48 2Z" />
-    <path d="M4 55c21 2 35 13 44 35 9-22 23-33 44-35-21 10-35 22-44 41C39 77 25 65 4 55Z" />
-  </svg>
-)
+const LogoMark = () => {
+  const maskId = `primis-logo-mask-${React.useId().replace(/:/g, '')}`
+  return (
+    <svg className="logo-mark" viewBox="0 0 1280 1280" aria-hidden="true">
+      <defs>
+        <mask id={maskId} maskType="luminance">
+          <image href="/assets/primis-logo-exact.png" width="1280" height="1280" />
+        </mask>
+      </defs>
+      <rect width="1280" height="1280" fill="currentColor" mask={`url(#${maskId})`} />
+    </svg>
+  )
+}
 
 const SparkIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
