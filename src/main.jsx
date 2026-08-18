@@ -647,7 +647,7 @@ function WaitlistPage() {
             <button type="submit" disabled={status === 'submitting' || !turnstileToken}>{status === 'submitting' ? 'Sending…' : 'Sign up'} <Arrow /></button>
           </form>
           <Turnstile theme="dark" onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
-          <p className="form-privacy-note">We will email you a confirmation link. After confirmation, we use the address once for the Atlas launch notice and then delete it. <a href="/privacy">Privacy details</a>.</p>
+          <p className="form-privacy-note">By signing up, you consent to one Atlas launch email. No recurring marketing. <a href="/privacy">Privacy details</a>.</p>
           {verificationError && <p className="mail-draft-status form-error" role="alert">Browser verification was blocked. Allow challenges.cloudflare.com or email us directly.</p>}
           {status === 'registered' && <p className="mail-draft-status" role="status">This email is already registered.</p>}
           {status === 'confirmation_sent' && <p className="mail-draft-status" role="status">A confirmation email has been sent.</p>}
