@@ -67,7 +67,7 @@ async function submitContact(body, request, env) {
   const company = cleanSingleLine(body.company, 120)
   const email = normalizeEmail(body.email)
   const message = cleanMultiline(body.message, 1600)
-  if (!email || message.length < 10) return json({ ok: false, error: 'invalid_fields' }, 400, request, env)
+  if (!email || message.length < 2) return json({ ok: false, error: 'invalid_fields' }, 400, request, env)
 
   const allowed = await consumeRateLimit(env, `contact:${await requestFingerprint(request, env)}`, 5, 60 * 60)
   if (!allowed) return json({ ok: false, error: 'rate_limited' }, 429, request, env)

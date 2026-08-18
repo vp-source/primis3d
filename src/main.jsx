@@ -713,7 +713,7 @@ function ContactPage() {
           <div className="contact-fields">
             <div><label><span className="field-label">Name <small>optional</small></span><input name="name" autoComplete="name" maxLength="100" value={form.name} onChange={updateField} placeholder="Your name" /></label><label><span className="field-label">Company <small>optional</small></span><input name="company" autoComplete="organization" maxLength="120" value={form.company} onChange={updateField} placeholder="Company" /></label></div>
             <label>Reply email<input name="email" type="email" autoComplete="email" maxLength="254" value={form.email} onChange={updateField} placeholder="you@company.com" required /></label>
-            <label>How can Atlas help?<textarea name="useCase" maxLength="1600" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
+            <label>How can Atlas help?<textarea name="useCase" minLength="2" maxLength="1600" value={form.useCase} onChange={updateField} placeholder="Tell us about your scene, workflow, or research goal" rows="5" required /></label>
             <input className="form-honeypot" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" />
             <Turnstile onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
             <p className="form-privacy-note form-privacy-note-light">Primis uses your details only to deliver and answer this enquiry. <a href="/privacy">Privacy details</a>.</p>
