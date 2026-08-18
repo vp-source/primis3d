@@ -142,7 +142,6 @@ function Hero() {
 }
 
 function LiveDemoPreview() {
-  const demoStart = 7.6
   const reduceMotion = prefersReducedMotion()
 
   return (
@@ -160,13 +159,8 @@ function LiveDemoPreview() {
           controls
           preload="metadata"
           aria-label="Atlas Studio development reconstruction demonstration"
-          onLoadedMetadata={(event) => { event.currentTarget.currentTime = demoStart }}
-          onEnded={(event) => {
-            event.currentTarget.currentTime = demoStart
-            if (!reduceMotion) event.currentTarget.play()
-          }}
         >
-          <source src="/assets/primis-demo-trimmed.webm" type="video/webm" />
+          <source src="/assets/primis-demo.webm" type="video/webm" />
         </video>
         <figcaption className="sr-only">A development capture of Atlas Studio reconstructing a photograph into a structured 3D scene.</figcaption>
       </figure>
