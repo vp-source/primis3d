@@ -998,6 +998,7 @@ function WorldViewPlaceholder({ index, type, category }) {
 function WorldsGallery() {
   const [activeWorld, setActiveWorld] = useState(0)
   const [viewMode, setViewMode] = useState('orbit')
+  const [activeCapability, setActiveCapability] = useState(0)
   const featuredWorlds = worldCatalog
   const world = featuredWorlds[activeWorld]
   const worldGroups = ['Outdoor', 'Indoor'].map(category => ({ category, worlds: featuredWorlds.map((item, index) => ({ ...item, index })).filter(item => item.category === category) }))
@@ -1006,12 +1007,14 @@ function WorldsGallery() {
     walk: { label: 'Walk', description: 'Move through the world at ground level and inspect it at human scale.' },
     data: { label: 'Spatial data', description: 'Inspect the geometry, object structure, depth, and traversable areas beneath the render.' }
   }
-  const channels = [
-    { slug: 'surface', index: 0, eyebrow: '01 / GEOMETRY', title: 'Editable surface', text: 'Connected terrain and scene geometry form the physical structure of the world.' },
-    { slug: 'semantic', index: 1, eyebrow: '02 / SEMANTICS', title: 'Named regions', text: 'Objects and areas remain individually addressable instead of being flattened into one image.' },
-    { slug: 'depth', index: 2, eyebrow: '03 / SCALE', title: 'Metric depth', text: 'Estimated depth and scale are intended to preserve the distances required by simulation and physical reasoning.' },
-    { slug: 'traversability', index: 3, eyebrow: '04 / ACTION', title: 'Traversable space', text: 'Open routes and boundaries reveal where an agent can move and act.' }
+  const capabilities = [
+    { title: 'Reconstruct', text: 'Drop in a single image and Primis rebuilds the entire scene in 3D. Every object is placed at real-world scale, one after another.', media: '/assets/cap-reconstruct.mp4', type: 'video', tag: 'Single image → 3D scene' },
+    { title: 'Decompose', text: 'Every object separates into its own clean, engine-ready mesh, individually selectable and named down to its sub-parts. You set the fidelity, from a quick layout to full detail.', media: '/assets/cap-decompose.mp4', type: 'video', tag: 'Scene → editable objects' },
+    { title: 'Simulate', text: 'Run robots and processes inside the world before you ever touch hardware. Grab a box off the shelf, place a tool inside it, and rehearse the whole task to scale.', media: '/assets/cap-simulate.jpg', type: 'image', tag: 'World → simulation' },
+    { title: 'Reason', text: 'Every object in the scene is known, so you can ask about it in plain language. Pose a question like “where is the white helmet?” and get a grounded spatial answer.', media: '/assets/cap-reason.mp4', type: 'video', tag: 'Scene → spatial answer' },
+    { title: 'Synthetic data', text: 'Turn one real scene into thousands of aligned, labeled variations. You get training and test environments without capturing every variation again.', media: '/assets/cap-synthetic.mp4', type: 'video', tag: 'One scene → many variations' }
   ]
+  const capability = capabilities[activeCapability]
 
   return (
     <section className="world-exhibition">
@@ -1064,15 +1067,26 @@ function WorldsGallery() {
         </div>
       </section>
 
-      <section className="world-data" aria-labelledby="world-data-title">
-        <header><h2 id="world-data-title">More than a render.</h2><p>The same generated environment can expose the spatial information needed by editors, simulators, and intelligent agents.</p></header>
-        <div className="world-data-grid">
-          {channels.map(channel => (
-            <article key={channel.slug}>
-              <div className="world-data-visual"><PlaceholderReconstruction category={world.category} variant={activeWorld + channel.index} channel={`channel-${channel.slug}`} /></div>
-              <div className="world-data-copy"><span>{channel.eyebrow}</span><h3>{channel.title}</h3><p>{channel.text}</p></div>
-            </article>
-          ))}
+      <section className="world-capabilities" aria-labelledby="world-capabilities-title">
+        <header className="world-capabilities-heading">
+          <h2 id="world-capabilities-title"><span>One scene.</span><em>Put it to work.</em></h2>
+          <p>One photograph in. A spatially consistent, fully decomposed 3D world out. Reconstruct it, take it apart object by object, simulate inside it, and reason about it in plain language.</p>
+        </header>
+        <div className="world-capabilities-grid">
+          <div className="world-capability-list" role="tablist" aria-label="Atlas capabilities">
+            {capabilities.map((item, index) => (
+              <button id={`capability-tab-${index}`} type="button" role="tab" aria-selected={activeCapability === index} aria-controls="capability-panel" className={activeCapability === index ? 'active' : ''} onClick={() => setActiveCapability(index)} key={item.title}>
+                <span>{item.title}</span>
+                <p>{item.text}</p>
+              </button>
+            ))}
+          </div>
+          <div id="capability-panel" className="world-capability-media" role="tabpanel" aria-labelledby={`capability-tab-${activeCapability}`}>
+            {capability.type === 'video'
+              ? <video key={capability.media} autoPlay muted loop playsInline preload="metadata"><source src={capability.media} type="video/mp4" /></video>
+              : <img src={capability.media} alt="Robot task simulation inside a reconstructed workshop" />}
+            <span>{capability.tag}</span>
+          </div>
         </div>
       </section>
     </section>
