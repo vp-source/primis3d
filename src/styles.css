@@ -495,3 +495,76 @@ svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-l
   .atlas-studio-page .studio-edit-toolbar{top:42px}
   .atlas-studio-page .studio-view-controls{top:88px}
 }
+
+/* Studio palette: retain the refined layout with the original graphite finish. */
+.atlas-studio-page{--studio-paper:#0b0e10;--studio-paper-soft:#101417;--studio-ink:#e1e8eb;--studio-muted:#929ca1;--studio-line:#242b2f;--studio-accent:#7fd8ff;background:#080a0c;color:var(--studio-ink)}
+.atlas-studio-page .studio-shell,.atlas-studio-page .studio-toolbar{background:#090b0d;color:var(--studio-ink)}
+.atlas-studio-page .studio-brand,.atlas-studio-page .studio-brand svg{color:#e5ebee}
+.atlas-studio-page .studio-brand em{color:#758187}
+.atlas-studio-page .studio-brand i{border-color:#375563;background:#10191d;color:#8edaf6}
+.atlas-studio-page .mode-tabs{border-color:#2a3035;background:#101316}
+.atlas-studio-page .mode-tabs button{color:#7e888e}
+.atlas-studio-page .mode-tabs button:hover{color:#d7e0e4;background:#161c1f}
+.atlas-studio-page .mode-tabs button.active{background:#e2e8eb;color:#0a0d0f;box-shadow:none}
+.atlas-studio-page .reconstruct-button{background:#dce8ed;color:#101519}
+.atlas-studio-page .reconstruct-button:hover{background:#fff;color:#101519}
+.atlas-studio-page .studio-sidebar{background:#0b0e10;color:#99a2a7}
+.atlas-studio-page .panel-title{color:#6f7b81}
+.atlas-studio-page .panel-title>b{border-color:#2c3439;background:#101518;color:#9ba5aa}
+.atlas-studio-page .image-upload{border-color:#313b41;background:#101417;color:#97a1a6}
+.atlas-studio-page .image-upload:hover{border-color:#5d8fa1;background:#12191c}
+.atlas-studio-page .image-upload svg{color:#7fd8ff}
+.atlas-studio-page .image-upload strong{color:#d5dde0}
+.atlas-studio-page .image-upload small{color:#6e787d}
+.atlas-studio-page .model-import-button{border-color:#273137;background:#0e1214;color:#8f9ba1}
+.atlas-studio-page .model-import-button:hover{border-color:#426574;background:#11181b;color:#c9e9f4}
+.atlas-studio-page .model-import-button small{color:#62737b}
+.atlas-studio-page .source-meta{border-color:#20272b}
+.atlas-studio-page .source-meta span{color:#68747a}
+.atlas-studio-page .source-meta b{color:#a9b2b6}
+.atlas-studio-page .layer-controls label{color:#a0aaaf}
+.atlas-studio-page .layer-controls label i{background:#2c3438}
+.atlas-studio-page .layer-controls label i::after{background:#748087}
+.atlas-studio-page .layer-controls input:checked+i{background:#315c6d}
+.atlas-studio-page .layer-controls input:checked+i::after{background:#a9e8ff}
+.atlas-studio-page .studio-edit-toolbar,.atlas-studio-page .studio-view-controls{border-color:rgba(151,171,181,.18);background:rgba(8,11,13,.86);box-shadow:0 8px 25px rgba(0,0,0,.24)}
+.atlas-studio-page .studio-edit-toolbar>button,.atlas-studio-page .studio-export-control>button{color:#849097}
+.atlas-studio-page .studio-edit-toolbar button:hover:not(:disabled){color:#d9f4ff;background:rgba(127,216,255,.08)}
+.atlas-studio-page .studio-edit-toolbar button.active{color:#d9f4ff;background:rgba(127,216,255,.12)}
+.atlas-studio-page .studio-edit-toolbar>i{background:#293238}
+.atlas-studio-page .studio-edit-toolbar kbd{color:#53636b}
+.atlas-studio-page .studio-export-menu{border-color:#2c383e;background:#0b1012;box-shadow:0 18px 45px rgba(0,0,0,.4)}
+.atlas-studio-page .studio-export-menu button{color:#a8b4ba}
+.atlas-studio-page .studio-export-menu button:hover{background:#141d21}
+.atlas-studio-page .studio-export-menu strong{color:#d9e7ec}
+.atlas-studio-page .studio-export-menu span{color:#68777e}
+.atlas-studio-page .studio-view-controls{color:#7d888d}
+.atlas-studio-page .studio-view-controls button{border-color:rgba(255,255,255,.07);color:#9da8ad}
+.atlas-studio-page .studio-view-controls button:hover{color:#d9f4ff;background:rgba(127,216,255,.08)}
+.atlas-studio-page .viewport-top span:first-child i{background:#79d5f5;box-shadow:0 0 7px #79d5f5}
+.atlas-studio-page .object-row.active{background:rgba(98,192,225,.1);box-shadow:inset 2px 0 0 #79d5f5}
+.atlas-studio-page .object-select{color:#9ea8ad}
+.atlas-studio-page .object-select>i{border-color:#6e7b81}
+.atlas-studio-page .object-select span strong{color:#b9c2c6}
+.atlas-studio-page .object-select span small{color:#69747a}
+.atlas-studio-page .object-select>em{color:#6c7980}
+.atlas-studio-page .object-row-actions{background:linear-gradient(90deg,transparent,#0b0e10 30%)}
+.atlas-studio-page .object-row.active .object-row-actions{background:linear-gradient(90deg,transparent,#111d21 30%)}
+.atlas-studio-page .object-row-actions button{color:#536168}
+.atlas-studio-page .object-row-actions button.active{color:#9ddff6}
+.atlas-studio-page .object-inspector{background:#0b0e10}
+.atlas-studio-page .inspector-name-input{color:#e0e7ea}
+.atlas-studio-page .inspector-name-input:hover{border-color:#28343a}
+.atlas-studio-page .inspector-name-input:focus{border-color:#62a6bd}
+.atlas-studio-page .selection-type{color:#7f9199}
+.atlas-studio-page .selection-empty{color:#8b989e}
+.atlas-studio-page .transform-channel>span{color:#667279}
+.atlas-studio-page .transform-channel label{border-color:#263036;background:#0d1214;color:#68777e}
+.atlas-studio-page .transform-channel label:focus-within{border-color:#5e9aae}
+.atlas-studio-page .transform-channel input{color:#b8c5ca}
+.atlas-studio-page .transform-channel em{color:#526168}
+.atlas-studio-page .object-inspector dt{color:#667279}
+.atlas-studio-page .object-inspector dd{color:#aab5ba}
+.atlas-studio-page .inspector-actions button{border-color:#28343a;background:#0e1315;color:#87969d}
+.atlas-studio-page .inspector-actions button:hover{border-color:#4e7989;background:#121a1e;color:#cbeaf4}
+.atlas-studio-page .studio-toast{border-color:rgba(127,216,255,.22);background:rgba(8,13,16,.94);color:#bdeaff}
