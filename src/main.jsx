@@ -951,7 +951,7 @@ function WorldViewPlaceholder({ index, type, category }) {
 function WorldsGallery() {
   const [activeWorld, setActiveWorld] = useState(0)
   const [viewMode, setViewMode] = useState('orbit')
-  const [stageMode, setStageMode] = useState('source')
+  const [stageMode, setStageMode] = useState('unavailable')
   const [transitionRun, setTransitionRun] = useState(0)
   const [activeCapability, setActiveCapability] = useState(0)
   const featuredWorlds = worldCatalog
@@ -1018,7 +1018,11 @@ function WorldsGallery() {
             {Object.entries(views).map(([slug, view]) => <button id={`world-view-tab-${slug}`} aria-controls="world-view-panel" key={slug} role="tab" aria-selected={viewMode === slug} tabIndex={viewMode === slug ? 0 : -1} className={viewMode === slug ? 'active' : ''} onClick={() => setViewMode(slug)}>{view.label}</button>)}
           </div>
           <div id="world-view-panel" className={`world-selected-view mode-${viewMode}`} role="tabpanel" aria-labelledby={`world-view-tab-${viewMode}`}>
-            {viewMode === 'data' ? <PlaceholderReconstruction category={world.category} variant={activeWorld} channel="channel-semantic" /> : <WorldViewPlaceholder index={activeWorld % 3 + 1} type={viewMode} category={world.category} />}
+            <img src={world.image} alt="" aria-hidden="true" />
+            <div className="world-view-unavailable" role="status">
+              <span>{views[viewMode].label.toUpperCase()} / 3D WORLD</span>
+              <p>3D models aren&apos;t available currently.</p>
+            </div>
           </div>
           <p className="world-view-description">{views[viewMode].description}</p>
         </aside>
