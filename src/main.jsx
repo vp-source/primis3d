@@ -895,16 +895,17 @@ function LegalPage({ type }) {
 }
 
 const worldCatalog = [
-  { name: 'Woodland Trail', family: 'Forest path', category: 'Outdoor', prompt: 'A reconstructed woodland route with trees, changing elevation, open ground, and clear traversable boundaries.' },
-  { name: 'Coastal Bluff', family: 'Coastal site', category: 'Outdoor', prompt: 'A coastal reconstruction preserving cliffs, exposed ground, structures, and the scale of the surrounding landscape.' },
-  { name: 'Garden Court', family: 'Courtyard landscape', category: 'Outdoor', prompt: 'An enclosed garden with planting, paths, walls, and separated scene elements ready for editing.' },
-  { name: 'Urban Passage', family: 'Street corridor', category: 'Outdoor', prompt: 'A street-scale reconstruction with buildings, road geometry, street objects, and connected pedestrian space.' },
-  { name: 'Quarry Terrace', family: 'Industrial landscape', category: 'Outdoor', prompt: 'A large outdoor worksite with layered terrain, access routes, equipment zones, and measurable elevation changes.' },
-  { name: 'Design Studio', family: 'Creative workspace', category: 'Indoor', prompt: 'A room-scale reconstruction with desks, storage, equipment, and individually editable workspace objects.' },
-  { name: 'Robotics Lab', family: 'Technical workspace', category: 'Indoor', prompt: 'A structured laboratory scene with work cells, articulated equipment, clearances, and navigable floor space.' },
-  { name: 'Apartment Interior', family: 'Residential space', category: 'Indoor', prompt: 'A connected home interior with furniture, openings, room boundaries, and real-world spatial relationships.' },
-  { name: 'Warehouse Bay', family: 'Industrial interior', category: 'Indoor', prompt: 'A metric warehouse reconstruction with racks, containers, aisles, and space for navigation and manipulation.' },
-  { name: 'Gallery Hall', family: 'Exhibition space', category: 'Indoor', prompt: 'An open interior with display objects, architectural surfaces, sightlines, and a clean editable hierarchy.' }
+  { name: 'Alpine Ruins', family: 'Mountain world', category: 'Outdoor', image: '/assets/worlds/outdoor-alpine-ruins.jpg', alt: 'Mountain landscape crossed by paths and monumental stone ruins', prompt: 'A mountain-scale world with connected trails, ruins, cliffs, vegetation, and long-range terrain relationships.' },
+  { name: 'Enchanted Tower', family: 'Fantasy clearing', category: 'Outdoor', image: '/assets/worlds/outdoor-enchanted-tower.jpg', alt: 'Tall stone tower in a bright magical forest clearing', prompt: 'A contained forest world with a central tower, branching paths, trees, rocks, and individually addressable landmarks.' },
+  { name: 'Clockwork Street', family: 'Urban corridor', category: 'Outdoor', image: '/assets/worlds/outdoor-clockwork-street.jpg', alt: 'Warm steampunk street lined with shops, pipes, clocks, and an airship', prompt: 'A street-scale reconstruction with connected facades, shop fronts, props, roadway geometry, and layered vertical detail.' },
+  { name: 'Last Station', family: 'Roadside site', category: 'Outdoor', image: '/assets/worlds/outdoor-last-station.jpg', alt: 'Abandoned gas station and car in a dark foggy forest', prompt: 'A low-visibility roadside scene where the station, pumps, vehicle, road surface, and surrounding forest remain spatially distinct.' },
+  { name: 'Desert Relay', family: 'Infrastructure site', category: 'Outdoor', image: '/assets/worlds/outdoor-desert-relay.jpg', alt: 'Fenced satellite and communications relay site in a desert valley', prompt: 'A bounded infrastructure world with a dish, mast, equipment building, generator, fence, and measurable terrain.' },
+  { name: 'Robotics Warehouse', family: 'Industrial interior', category: 'Indoor', image: '/assets/worlds/indoor-robotics-warehouse.jpg', alt: 'Bright warehouse with storage racks, forklift, workbench, and robot arm', prompt: 'A working warehouse reconstructed as separate racks, pallets, vehicle, robot cell, clear floor, and navigable aisles.' },
+  { name: 'Living Room', family: 'Residential interior', category: 'Indoor', image: '/assets/worlds/indoor-living-room.jpg', alt: 'Minimal living room with sofas, tables, television, lamps, and plants', prompt: 'A residential scene with furniture, electronics, openings, circulation space, and object-to-object relationships preserved.' },
+  { name: 'Private Office', family: 'Workplace interior', category: 'Indoor', image: '/assets/worlds/indoor-private-office.jpg', alt: 'Private office with desk, seating, storage, computer, and plants', prompt: 'A compact workplace world with selectable furniture, equipment, storage, architectural boundaries, and real-world clearances.' },
+  { name: 'Winter Cabin', family: 'Cabin interior', category: 'Indoor', image: '/assets/worlds/indoor-winter-cabin.jpg', alt: 'Warm timber cabin interior overlooking a snowy forest', prompt: 'A timber cabin reconstructed with its fireplace, furniture, lighting, openings, and dense material boundaries intact.' },
+  { name: 'Medieval Tavern', family: 'Historic interior', category: 'Indoor', image: '/assets/worlds/indoor-medieval-tavern.jpg', alt: 'Medieval tavern interior with bar, tables, stools, fireplace, and timber beams', prompt: 'A detailed period interior separated into architecture, furniture, vessels, lighting, and usable open floor space.' },
+  { name: 'Kitchen', family: 'Domestic workspace', category: 'Indoor', image: '/assets/worlds/indoor-kitchen.jpg', alt: 'Bright kitchen with cabinets, island, appliances, stools, and pendant lights', prompt: 'A domestic workspace whose cabinetry, appliances, surfaces, fixtures, and circulation zones become editable scene elements.' }
 ]
 
 function PlaceholderTerrain({ compact = false, variant = 0, channel = '' }) {
@@ -951,10 +952,17 @@ function WorldViewPlaceholder({ index, type, category }) {
 function WorldsGallery() {
   const [activeWorld, setActiveWorld] = useState(0)
   const [viewMode, setViewMode] = useState('orbit')
+  const [stageMode, setStageMode] = useState('model')
   const [activeCapability, setActiveCapability] = useState(0)
   const featuredWorlds = worldCatalog
   const world = featuredWorlds[activeWorld]
-  const worldGroups = ['Outdoor', 'Indoor'].map(category => ({ category, worlds: featuredWorlds.map((item, index) => ({ ...item, index })).filter(item => item.category === category) }))
+  const worldGroups = ['Outdoor', 'Indoor'].map(category => ({
+    category,
+    worlds: featuredWorlds
+      .map((item, index) => ({ ...item, index }))
+      .filter(item => item.category === category)
+      .map((item, categoryIndex) => ({ ...item, categoryIndex }))
+  }))
   const views = {
     orbit: { label: 'Orbit', description: 'Read the complete terrain, boundaries, and connected regions from above.' },
     walk: { label: 'Walk', description: 'Move through the world at ground level and inspect it at human scale.' },
@@ -974,14 +982,19 @@ function WorldsGallery() {
         <div className="world-exhibition-title">
           <h1>Worlds built<br /><em>to be explored.</em></h1>
         </div>
-        <p>Explore five outdoor and five indoor reconstructions. Each is designed to be viewed, edited, measured, and used as a working spatial model.</p>
+        <p>Explore five outdoor and six indoor source scenes. Open any photograph as a temporary 3D reconstruction now, then replace the placeholder with its finished world model.</p>
       </header>
 
       <div className="world-stage">
-        <div className="world-stage-model" role="img" aria-label={`Placeholder 3D model for ${world.name}`}>
-          <div className="world-stage-chip"><LogoMark /><span>{world.category.toUpperCase()} / PLACEHOLDER MODEL</span></div>
-          <PlaceholderReconstruction category={world.category} variant={activeWorld} />
-          <div className="world-stage-axis" aria-hidden="true"><i /><b>X</b><em>Y</em><span>Z</span></div>
+        <div className={`world-stage-model is-${stageMode}`} aria-label={stageMode === 'source' ? `Source photograph for ${world.name}` : `Placeholder 3D model for ${world.name}`}>
+          <div className="world-stage-chip"><LogoMark /><span>{world.category.toUpperCase()} / {stageMode === 'source' ? 'SOURCE PHOTOGRAPH' : 'PLACEHOLDER 3D'}</span></div>
+          <div className="world-stage-switch" role="group" aria-label="Choose source photograph or 3D reconstruction">
+            <button type="button" className={stageMode === 'source' ? 'active' : ''} aria-pressed={stageMode === 'source'} onClick={() => setStageMode('source')}>Source</button>
+            <button type="button" className={stageMode === 'model' ? 'active' : ''} aria-pressed={stageMode === 'model'} onClick={() => setStageMode('model')}>3D world</button>
+          </div>
+          {stageMode === 'source'
+            ? <img className="world-stage-source" src={world.image} alt={world.alt} />
+            : <><PlaceholderReconstruction category={world.category} variant={activeWorld} /><div className="world-stage-axis" aria-hidden="true"><i /><b>X</b><em>Y</em><span>Z</span></div></>}
         </div>
 
         <aside className="world-stage-details">
@@ -999,16 +1012,16 @@ function WorldsGallery() {
       </div>
 
       <section className="world-library" aria-labelledby="world-library-title">
-        <div className="world-library-heading"><h2 id="world-library-title">Ten reconstructed spaces.</h2><p>Five outdoor environments and five indoor environments. The placeholders can be replaced directly as your finished reconstructions become available.</p></div>
+        <div className="world-library-heading"><h2 id="world-library-title">Eleven worlds in progress.</h2><p>Five outdoor environments and six indoor environments. Every source photograph is paired with a temporary 3D reconstruction view.</p></div>
         <div className="world-library-groups">
           {worldGroups.map(group => (
             <section className="world-library-group" aria-labelledby={`world-group-${group.category.toLowerCase()}`} key={group.category}>
-              <header><h3 id={`world-group-${group.category.toLowerCase()}`}>{group.category}</h3><span>05 RECONSTRUCTIONS</span></header>
-              <div className="world-library-grid" role="group" aria-label={`Select ${group.category.toLowerCase()} reconstruction`}>
+              <header><h3 id={`world-group-${group.category.toLowerCase()}`}>{group.category}</h3><span>{String(group.worlds.length).padStart(2, '0')} SOURCE SCENES</span></header>
+              <div className="world-library-grid" style={{ '--world-columns': group.worlds.length }} role="group" aria-label={`Select ${group.category.toLowerCase()} reconstruction`}>
                 {group.worlds.map(item => (
-                  <button className={activeWorld === item.index ? 'active' : ''} onClick={() => setActiveWorld(item.index)} key={item.name} aria-label={`Show ${item.name}`}>
-                    <div><PlaceholderReconstruction category={item.category} compact variant={item.index} /></div>
-                    <span>{item.category === 'Outdoor' ? 'OUT' : 'IN'} / {String((item.index % 5) + 1).padStart(2, '0')}</span>
+                  <button className={activeWorld === item.index ? 'active' : ''} onClick={() => { setActiveWorld(item.index); setStageMode('model'); document.querySelector('.world-stage')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }} key={item.name} aria-label={`View ${item.name} as a 3D reconstruction`}>
+                    <div className="world-library-image"><img src={item.image} alt="" loading="lazy" /><span>View 3D</span></div>
+                    <span>{item.category === 'Outdoor' ? 'OUT' : 'IN'} / {String(item.categoryIndex + 1).padStart(2, '0')}</span>
                     <strong>{item.name}</strong>
                     <small>{item.family}</small>
                   </button>
