@@ -73,7 +73,7 @@ svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-l
   position: relative; width: min(1400px, calc(100% - 80px)); min-height: calc(100svh - 165px); margin: 0 auto;
   display: grid; grid-template-columns: .86fr 1.14fr; align-items: center; gap: 35px; padding: 70px 0 85px;
 }
-.hero-copy { position: relative; z-index: 2; min-width: 0; max-width: 610px; padding-left: 20px; transform: translate(calc(36px - max(0px, (100vw - 1480px) / 2)), 58px); }
+.hero-copy { position: relative; z-index: 2; min-width: 0; max-width: 610px; padding-left: 20px; transform: translate(calc(60px - max(0px, (100vw - 1480px) / 2)), 58px); }
 .hero h1 { font-size: clamp(64px, 6vw, 88px); font-weight: 400; letter-spacing: -.06em; line-height: .84; margin: 0 0 35px; }
 .hero h1 > span { display: inline-block; white-space: nowrap; }
 .hero h1 em { display:inline-block; white-space:nowrap; font-family: 'Source Serif 4', Georgia, serif; font-weight: 400; color: #e49a88; }
@@ -85,7 +85,7 @@ svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-l
 .button-ghost { border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.02); }
 .button svg { width: 16px; }
 
-.world-wrap { position: relative; height: 630px; display: grid; place-items: center; transform: translate(140px, 100px); }
+.world-wrap { position: relative; height: 630px; display: grid; place-items: center; transform: translate(164px, 100px); }
 .world-glow { position: absolute; width: 70%; height: 32%; border-radius: 50%; background: rgba(221,118,111,.16); filter: blur(100px); }
 .world-platform {
   position: relative; width: min(640px, 46vw); aspect-ratio: 1.45; transform: perspective(900px) rotateX(58deg) rotateZ(-7deg);
