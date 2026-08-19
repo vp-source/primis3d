@@ -85,7 +85,7 @@ svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-l
 .button-ghost { border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.02); }
 .button svg { width: 16px; }
 
-.world-wrap { position: relative; height: 630px; display: grid; place-items: center; transform: translate(260px, 100px); }
+.world-wrap { position: relative; height: 630px; display: grid; place-items: center; transform: translate(0, 100px); }
 .world-glow { position: absolute; width: 70%; height: 32%; border-radius: 50%; background: rgba(221,118,111,.16); filter: blur(100px); }
 .world-platform {
   position: relative; width: min(640px, 46vw); aspect-ratio: 1.45; transform: perspective(900px) rotateX(58deg) rotateZ(-7deg);

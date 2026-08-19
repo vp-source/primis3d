@@ -124,10 +124,10 @@ function WorldPlaceholder() {
       <svg className="hero-filter-def" aria-hidden="true">
         <filter id="spatial-field-alpha" colorInterpolationFilters="sRGB">
           <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  .333 .333 .333 0 0" />
-          <feComponentTransfer><feFuncA type="gamma" amplitude="1" exponent="1.35" offset="0" /></feComponentTransfer>
+          <feComponentTransfer><feFuncA type="gamma" amplitude="1" exponent=".85" offset="0" /></feComponentTransfer>
         </filter>
       </svg>
-      <img className="hero-world-image" src="/assets/atlas-spatial-field.png" alt="A luminous spatial field represented as a flowing three-dimensional grid" />
+      <img className="hero-world-image" src="/assets/atlas-digital-twin-workshop.png" alt="A workshop scene transitioning from textured reality into structured geometric reconstruction" />
     </div>
   )
 }
