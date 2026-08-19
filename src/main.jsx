@@ -951,7 +951,8 @@ function WorldViewPlaceholder({ index, type, category }) {
 function WorldsGallery() {
   const [activeWorld, setActiveWorld] = useState(0)
   const [viewMode, setViewMode] = useState('orbit')
-  const [stageMode, setStageMode] = useState('model')
+  const [stageMode, setStageMode] = useState('source')
+  const [transitionRun, setTransitionRun] = useState(0)
   const [activeCapability, setActiveCapability] = useState(0)
   const featuredWorlds = worldCatalog
   const world = featuredWorlds[activeWorld]
@@ -975,25 +976,38 @@ function WorldsGallery() {
   ]
   const capability = capabilities[activeCapability]
 
+  useEffect(() => {
+    if (stageMode !== 'transitioning') return undefined
+    const timer = window.setTimeout(() => setStageMode('unavailable'), prefersReducedMotion() ? 250 : 1350)
+    return () => window.clearTimeout(timer)
+  }, [stageMode, transitionRun])
+
+  const openWorld = index => {
+    setActiveWorld(index)
+    setViewMode('orbit')
+    setStageMode('transitioning')
+    setTransitionRun(run => run + 1)
+    window.requestAnimationFrame(() => document.querySelector('.world-stage')?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' }))
+  }
+
   return (
     <section className="world-exhibition">
       <header className="world-exhibition-intro">
         <div className="world-exhibition-title">
           <h1>Worlds built<br /><em>to be explored.</em></h1>
         </div>
-        <p>Explore five outdoor and five indoor source scenes. Open any photograph as a temporary 3D reconstruction now, then replace the placeholder with its finished world model.</p>
+        <p>Explore five outdoor and five indoor source scenes. Select a photograph to open its future 3D world; finished models will appear here as they become available.</p>
       </header>
 
       <div className="world-stage">
-        <div className={`world-stage-model is-${stageMode}`} aria-label={stageMode === 'source' ? `Source photograph for ${world.name}` : `Placeholder 3D model for ${world.name}`}>
-          <div className="world-stage-chip"><LogoMark /><span>{world.category.toUpperCase()} / {stageMode === 'source' ? 'SOURCE PHOTOGRAPH' : 'PLACEHOLDER 3D'}</span></div>
+        <div className={`world-stage-model is-${stageMode}`} aria-label={stageMode === 'source' ? `Source photograph for ${world.name}` : `3D model availability for ${world.name}`}>
+          <div className="world-stage-chip"><LogoMark /><span>{world.category.toUpperCase()} / {stageMode === 'source' ? 'SOURCE PHOTOGRAPH' : '3D WORLD'}</span></div>
           <div className="world-stage-switch" role="group" aria-label="Choose source photograph or 3D reconstruction">
             <button type="button" className={stageMode === 'source' ? 'active' : ''} aria-pressed={stageMode === 'source'} onClick={() => setStageMode('source')}>Source</button>
-            <button type="button" className={stageMode === 'model' ? 'active' : ''} aria-pressed={stageMode === 'model'} onClick={() => setStageMode('model')}>3D world</button>
+            <button type="button" className={stageMode !== 'source' ? 'active' : ''} aria-pressed={stageMode !== 'source'} onClick={() => openWorld(activeWorld)}>3D world</button>
           </div>
-          {stageMode === 'source'
-            ? <img className="world-stage-source" src={world.image} alt={world.alt} />
-            : <><PlaceholderReconstruction category={world.category} variant={activeWorld} /><div className="world-stage-axis" aria-hidden="true"><i /><b>X</b><em>Y</em><span>Z</span></div></>}
+          <img key={`${world.image}-${transitionRun}`} className="world-stage-source" src={world.image} alt={world.alt} />
+          {stageMode !== 'source' && <div className="world-model-unavailable" role="status"><span>ATLAS / 3D WORLD</span><p>3D models aren&apos;t available currently.</p></div>}
         </div>
 
         <aside className="world-stage-details">
@@ -1011,14 +1025,14 @@ function WorldsGallery() {
       </div>
 
       <section className="world-library" aria-labelledby="world-library-title">
-        <div className="world-library-heading"><h2 id="world-library-title">Ten worlds in progress.</h2><p>Five outdoor environments and five indoor environments. Every source photograph is paired with a temporary 3D reconstruction view.</p></div>
+        <div className="world-library-heading"><h2 id="world-library-title">Ten worlds in progress.</h2><p>Five outdoor environments and five indoor environments. Each source photograph has a reserved 3D view for its finished reconstruction.</p></div>
         <div className="world-library-groups">
           {worldGroups.map(group => (
             <section className="world-library-group" aria-labelledby={`world-group-${group.category.toLowerCase()}`} key={group.category}>
               <header><h3 id={`world-group-${group.category.toLowerCase()}`}>{group.category}</h3><span>{String(group.worlds.length).padStart(2, '0')} SOURCE SCENES</span></header>
               <div className="world-library-grid" style={{ '--world-columns': group.worlds.length }} role="group" aria-label={`Select ${group.category.toLowerCase()} reconstruction`}>
                 {group.worlds.map(item => (
-                  <button className={activeWorld === item.index ? 'active' : ''} onClick={() => { setActiveWorld(item.index); setStageMode('model'); document.querySelector('.world-stage')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }} key={item.name} aria-label={`View ${item.name} as a 3D reconstruction`}>
+                  <button className={activeWorld === item.index ? 'active' : ''} onClick={() => openWorld(item.index)} key={item.name} aria-label={`View ${item.name} as a 3D reconstruction`}>
                     <div className="world-library-image"><img src={item.image} alt="" loading="lazy" /><span>View 3D</span></div>
                     <span>{item.category === 'Outdoor' ? 'OUT' : 'IN'} / {String(item.categoryIndex + 1).padStart(2, '0')}</span>
                     <strong>{item.name}</strong>
