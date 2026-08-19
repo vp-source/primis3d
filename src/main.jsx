@@ -493,10 +493,10 @@ const demoObjects = [
 
 function DemoStudio() {
   const [mode, setMode] = useState('Scene')
-  const [selected, setSelected] = useState('robot')
+  const [selected, setSelected] = useState('')
   const [sceneObjects, setSceneObjects] = useState(demoObjects)
   const [studioApi, setStudioApi] = useState(null)
-  const [tool, setTool] = useState('translate')
+  const [tool, setTool] = useState('select')
   const [transformSpace, setTransformSpace] = useState('world')
   const [snapEnabled, setSnapEnabled] = useState(true)
   const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false })
@@ -509,7 +509,12 @@ function DemoStudio() {
   const [layers, setLayers] = useState({ labels: true, geometry: true, path: true })
   const [question, setQuestion] = useState('Where is the robot arm?')
   const [answer, setAnswer] = useState('The robot arm is 1.2 m ahead, mounted beside the workbench.')
-  const selectedObject = sceneObjects.find(object => object.id === selected) || sceneObjects[0]
+  const selectedObject = sceneObjects.find(object => object.id === selected) || null
+
+  const selectObject = id => {
+    setSelected(id)
+    if (!id) setTool('select')
+  }
 
   useEffect(() => {
     if (!studioApi) return undefined
@@ -521,6 +526,8 @@ function DemoStudio() {
       if (command && key === 'z') { event.preventDefault(); event.shiftKey ? studioApi.redo() : studioApi.undo(); return }
       if (command && key === 'd') { event.preventDefault(); studioApi.cloneSelected(); return }
       if (key === 'delete' || key === 'backspace') { event.preventDefault(); studioApi.deleteSelected(); return }
+      if (key === 'escape') { setSelected(''); setTool('select'); return }
+      if (key === 'q') setTool('select')
       if (key === 'w') setTool('translate')
       if (key === 'e') setTool('rotate')
       if (key === 'r') setTool('scale')
@@ -553,13 +560,17 @@ function DemoStudio() {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file || !studioApi) return
+    if (file.size > 100 * 1024 * 1024) {
+      setStudioStatus('Import failed - files must be smaller than 100 MB')
+      return
+    }
     setBusyAction('import')
     try {
       await studioApi.importModel(file)
       setStudioStatus(`${file.name} added to scene`)
     } catch (error) {
       console.error(error)
-      setStudioStatus('Import failed — use a self-contained GLB file')
+      setStudioStatus('Import failed - use GLB, embedded GLTF, OBJ, STL, or PLY')
     } finally { setBusyAction('') }
   }
 
@@ -590,7 +601,7 @@ function DemoStudio() {
     <section className="studio-section" id="studio" aria-label="Atlas Studio interactive demo">
       <div className="studio-shell">
         <div className="studio-toolbar">
-          <div className="studio-brand"><LogoMark /><span>ATLAS STUDIO</span><i>BETA</i></div>
+          <a className="studio-brand" href="/" aria-label="Back to Primis"><LogoMark /><span>Atlas</span><em>/ Studio</em><i>Preview</i></a>
           <div className="mode-tabs">
             {['Scene', 'Objects', 'Simulate', 'Reason'].map(item => <button className={mode === item ? 'active' : ''} onClick={() => setMode(item)} key={item}>{item}</button>)}
           </div>
@@ -601,14 +612,14 @@ function DemoStudio() {
 
         <div className="studio-body">
           <aside className="studio-sidebar source-panel">
-            <div className="panel-title">SOURCE</div>
+            <div className="panel-title">INPUT</div>
             <label className="image-upload">
               {sourceImage ? <img src={sourceImage} alt="Uploaded source" /> : <><SparkIcon /><strong>Load a source image</strong><small>JPG or PNG · single view</small></>}
               <input type="file" accept="image/png,image/jpeg" onChange={loadImage} />
             </label>
-            <label className={`model-import-button ${busyAction === 'import' ? 'is-busy' : ''}`}>
-              <span>{busyAction === 'import' ? 'Importing model…' : '+ Import 3D model'}</span><small>GLB</small>
-              <input type="file" accept=".glb,model/gltf-binary" onChange={importModel} disabled={!studioApi || busyAction === 'import'} />
+            <label className={`model-import-button ${busyAction === 'import' ? 'is-busy' : ''}`} title="Import GLB, embedded GLTF, OBJ, STL, or PLY up to 100 MB">
+              <span>{busyAction === 'import' ? 'Importing model…' : '+ Import 3D model'}</span><small>5 FORMATS</small>
+              <input type="file" accept=".glb,.gltf,.obj,.stl,.ply,model/gltf-binary,model/gltf+json,model/obj,model/stl" onChange={importModel} disabled={!studioApi || busyAction === 'import'} />
             </label>
             <div className="source-meta"><span>Input</span><b>{sourceImage ? 'Custom image' : 'Workshop sample'}</b></div>
             <div className="source-meta"><span>Output</span><b>Metric 3D scene</b></div>
@@ -623,24 +634,25 @@ function DemoStudio() {
           <div className={`scene-viewport mode-${mode.toLowerCase()} ${complete ? 'is-complete' : ''}`}>
             {StudioViewport ? (
               <React.Suspense fallback={<div className="studio-viewport-loading">Initialising 3D viewport…</div>}>
-                <StudioViewport selected={selected} onSelect={setSelected} mode={mode} layers={layers} reconstructing={reconstructing} sourceImage={sourceImage} tool={tool} transformSpace={transformSpace} snapEnabled={snapEnabled} onReady={setStudioApi} onSceneChange={setSceneObjects} onHistoryChange={setHistoryState} />
+                <StudioViewport selected={selected} onSelect={selectObject} mode={mode} layers={layers} reconstructing={reconstructing} sourceImage={sourceImage} tool={tool} transformSpace={transformSpace} snapEnabled={snapEnabled} onReady={setStudioApi} onSceneChange={setSceneObjects} onHistoryChange={setHistoryState} />
               </React.Suspense>
             ) : null}
             <div className="studio-edit-toolbar" aria-label="Scene editing tools">
               <button type="button" onClick={() => studioApi?.undo()} disabled={!historyState.canUndo} title="Undo (Ctrl/⌘ Z)">↶</button>
               <button type="button" onClick={() => studioApi?.redo()} disabled={!historyState.canRedo} title="Redo (Ctrl/⌘ Shift Z)">↷</button>
               <i />
+              <button type="button" className={tool === 'select' ? 'active' : ''} onClick={() => setTool('select')} title="Select (Q)">Select<kbd>Q</kbd></button>
               {[['translate', 'Move', 'W'], ['rotate', 'Rotate', 'E'], ['scale', 'Scale', 'R']].map(([value, label, shortcut]) => (
                 <button type="button" className={tool === value ? 'active' : ''} onClick={() => setTool(value)} key={value} title={`${label} (${shortcut})`}>{label}<kbd>{shortcut}</kbd></button>
               ))}
               <i />
               <button type="button" className={snapEnabled ? 'active' : ''} onClick={() => setSnapEnabled(value => !value)} title="Toggle metric snapping">Snap</button>
               <button type="button" onClick={() => setTransformSpace(value => value === 'world' ? 'local' : 'world')} title="Toggle transform orientation">{transformSpace === 'world' ? 'World' : 'Local'}</button>
-              <button type="button" onClick={() => studioApi?.cloneSelected()} title="Duplicate (Ctrl/⌘ D)">Clone</button>
-              <button type="button" onClick={() => studioApi?.deleteSelected()} disabled={selectedObject?.locked} title="Delete selected object">Delete</button>
+              <button type="button" onClick={() => studioApi?.cloneSelected()} disabled={!selectedObject} title="Duplicate (Ctrl/⌘ D)">Clone</button>
+              <button type="button" onClick={() => studioApi?.deleteSelected()} disabled={!selectedObject || selectedObject.locked} title="Delete selected object">Delete</button>
               <div className="studio-export-control">
                 <button type="button" className={exportMenu ? 'active' : ''} onClick={() => setExportMenu(value => !value)} disabled={Boolean(busyAction)}>{busyAction && busyAction !== 'import' ? 'Exporting…' : 'Export'}</button>
-                {exportMenu && <div className="studio-export-menu"><button type="button" onClick={() => exportScene('glb')}><strong>GLB</strong><span>Engines &amp; web</span></button><button type="button" onClick={() => exportScene('usd')}><strong>USD</strong><span>ASCII .usda</span></button><button type="button" onClick={() => exportScene('usdz')}><strong>USDZ</strong><span>Apple &amp; AR</span></button></div>}
+                {exportMenu && <div className="studio-export-menu"><button type="button" onClick={() => exportScene('glb')}><strong>GLB</strong><span>Complete scene · engines</span></button><button type="button" onClick={() => exportScene('usd')}><strong>USD</strong><span>Complete scene · .usda</span></button><button type="button" onClick={() => exportScene('usdz')}><strong>USDZ</strong><span>Complete scene · Apple AR</span></button></div>}
               </div>
             </div>
             <div className="viewport-top"><span><i /> {reconstructing ? 'PROCESSING SOURCE' : complete ? 'SCENE READY' : 'SAMPLE SCENE'}</span><span>METRIC / 1:1</span></div>
@@ -650,11 +662,11 @@ function DemoStudio() {
           </div>
 
           <aside className="studio-sidebar objects-panel">
-            <div className="panel-title">SCENE OBJECTS <b>{sceneObjects.length}</b></div>
+            <div className="panel-title">SCENE <b>{sceneObjects.length}</b></div>
             <div className="object-list">
               {sceneObjects.map(object => (
                 <div className={`object-row ${selected === object.id ? 'active' : ''} ${object.visible ? '' : 'is-hidden'}`} key={object.id}>
-                  <button className="object-select" type="button" onClick={() => setSelected(object.id)}>
+                  <button className="object-select" type="button" onClick={() => selectObject(object.id)}>
                     <i /><span><strong>{object.name}</strong><small>{object.type}</small></span><em>{object.confidence}</em>
                   </button>
                   <div className="object-row-actions">
@@ -666,15 +678,17 @@ function DemoStudio() {
             </div>
             <div className="object-inspector">
               <div className="panel-title">SELECTION</div>
-              <input className="inspector-name-input" key={`${selectedObject.id}-${selectedObject.name}`} defaultValue={selectedObject.name} aria-label="Object name" onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} onBlur={event => studioApi?.renameObject(selectedObject.id, event.currentTarget.value)} />
-              <p className="selection-type">{selectedObject.type}</p>
-              <div className="transform-editor">
-                {[['position', 'Position', 'm'], ['rotation', 'Rotation', '°'], ['scale', 'Scale', '×']].map(([channel, label, unit]) => (
-                  <div className="transform-channel" key={`${selectedObject.id}-${channel}`}><span>{label}</span><div>{['x', 'y', 'z'].map((axis, index) => <label key={axis}><b>{axis}</b><input key={`${selectedObject.id}-${channel}-${axis}-${selectedObject[channel]?.[index]}`} type="number" step={channel === 'rotation' ? 1 : channel === 'scale' ? .1 : .01} defaultValue={selectedObject[channel]?.[index] ?? 0} disabled={selectedObject.locked} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} onBlur={event => studioApi?.setTransformValue(selectedObject.id, channel, axis, event.currentTarget.value)} /><em>{unit}</em></label>)}</div></div>
-                ))}
-              </div>
-              <dl><div><dt>Dimensions</dt><dd>{selectedObject.dimensions?.map(value => Number(value).toFixed(2)).join(' × ')} m</dd></div><div><dt>Scale</dt><dd>Real world / metric</dd></div><div><dt>Geometry</dt><dd>Editable mesh</dd></div></dl>
-              <div className="inspector-actions"><button type="button" onClick={() => studioApi?.frameSelected()}>Frame</button><button type="button" onClick={() => studioApi?.cloneSelected()}>Duplicate</button></div>
+              {selectedObject ? <>
+                <input className="inspector-name-input" key={`${selectedObject.id}-${selectedObject.name}`} defaultValue={selectedObject.name} aria-label="Object name" onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} onBlur={event => studioApi?.renameObject(selectedObject.id, event.currentTarget.value)} />
+                <p className="selection-type">{selectedObject.type}</p>
+                <div className="transform-editor">
+                  {[['position', 'Position', 'm'], ['rotation', 'Rotation', '°'], ['scale', 'Scale', '×']].map(([channel, label, unit]) => (
+                    <div className="transform-channel" key={`${selectedObject.id}-${channel}`}><span>{label}</span><div>{['x', 'y', 'z'].map((axis, index) => <label key={axis}><b>{axis}</b><input key={`${selectedObject.id}-${channel}-${axis}-${selectedObject[channel]?.[index]}`} type="number" step={channel === 'rotation' ? 1 : channel === 'scale' ? .1 : .01} defaultValue={selectedObject[channel]?.[index] ?? 0} disabled={selectedObject.locked} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} onBlur={event => studioApi?.setTransformValue(selectedObject.id, channel, axis, event.currentTarget.value)} /><em>{unit}</em></label>)}</div></div>
+                  ))}
+                </div>
+                <dl><div><dt>Dimensions</dt><dd>{selectedObject.dimensions?.map(value => Number(value).toFixed(2)).join(' × ')} m</dd></div><div><dt>Scale</dt><dd>Real world / metric</dd></div><div><dt>Geometry</dt><dd>Editable mesh</dd></div></dl>
+                <div className="inspector-actions"><button type="button" onClick={() => studioApi?.frameSelected()}>Frame</button><button type="button" onClick={() => studioApi?.cloneSelected()}>Duplicate</button></div>
+              </> : <p className="selection-empty">Select an object in the viewport or scene list to inspect it.</p>}
             </div>
           </aside>
         </div>

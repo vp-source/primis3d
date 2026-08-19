@@ -3,6 +3,9 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js'
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js'
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js'
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
 import { USDZExporter } from 'three/examples/jsm/exporters/USDZExporter.js'
 import { unzipSync } from 'three/examples/jsm/libs/fflate.module.js'
@@ -122,6 +125,7 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.075
+    controls.zoomToCursor = true
     controls.target.set(0, 0.85, 0)
     controls.minDistance = 3.6
     controls.maxDistance = 16
@@ -407,6 +411,7 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
     transformControls.setSize(0.78)
     scene.add(transformHelper)
     let transformBefore = null
+    let activeTool = tool
 
     const readTransform = root => ({
       position: root.position.toArray(),
@@ -425,7 +430,7 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
     const selectRoot = id => {
       const root = roots.get(id)
       transformControls.detach()
-      if (root?.visible && !root.userData.meta?.locked) transformControls.attach(root)
+      if (activeTool !== 'select' && root?.visible && !root.userData.meta?.locked) transformControls.attach(root)
     }
 
     transformControls.addEventListener('dragging-changed', event => { controls.enabled = !event.value })
@@ -454,13 +459,16 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
       pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
       pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
     }
-    const onPointerDown = event => { pointerDown = { x: event.clientX, y: event.clientY } }
+    const onPointerDown = event => { pointerDown = event.button === 0 ? { x: event.clientX, y: event.clientY } : null }
     const onPointerUp = event => {
-      if (!pointerDown || Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) > 5) return
+      if (!pointerDown) return
+      const movement = Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y)
+      pointerDown = null
+      if (movement > 5) return
       updatePointer(event)
       raycaster.setFromCamera(pointer, camera)
       const hit = raycaster.intersectObjects(Array.from(pickables).filter(object => roots.get(object.userData.rootId)?.visible), false)[0]
-      if (hit?.object.userData.rootId) onSelectRef.current?.(hit.object.userData.rootId)
+      onSelectRef.current?.(hit?.object.userData.rootId || '')
     }
     renderer.domElement.addEventListener('pointerdown', onPointerDown)
     renderer.domElement.addEventListener('pointerup', onPointerUp)
@@ -507,7 +515,15 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
       controls.update()
     }
 
-    const setTool = nextTool => transformControls.setMode(['translate', 'rotate', 'scale'].includes(nextTool) ? nextTool : 'translate')
+    const setTool = nextTool => {
+      activeTool = ['select', 'translate', 'rotate', 'scale'].includes(nextTool) ? nextTool : 'select'
+      if (activeTool === 'select') {
+        transformControls.detach()
+        return
+      }
+      transformControls.setMode(activeTool)
+      selectRoot(selectedRef.current)
+    }
     const setSpace = nextSpace => transformControls.setSpace(nextSpace === 'local' ? 'local' : 'world')
 
     const setSnap = enabled => {
@@ -645,11 +661,11 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
     const exportScene = async format => {
       const root = exportRoot()
       if (format === 'glb') {
-        const data = await new GLTFExporter().parseAsync(root, { binary: true, onlyVisible: true, trs: true })
+        const data = await new GLTFExporter().parseAsync(root, { binary: true, onlyVisible: false, trs: true })
         downloadBlob(new Blob([data], { type: 'model/gltf-binary' }), 'atlas-scene.glb')
         return 'atlas-scene.glb'
       }
-      const data = await new USDZExporter().parseAsync(root, { onlyVisible: true })
+      const data = await new USDZExporter().parseAsync(root, { onlyVisible: false })
       if (format === 'usdz') {
         downloadBlob(new Blob([data], { type: 'model/vnd.usdz+zip' }), 'atlas-scene.usdz')
         return 'atlas-scene.usdz'
@@ -663,7 +679,26 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
 
     const importModel = async file => {
       const buffer = await file.arrayBuffer()
-      const gltf = await new GLTFLoader().parseAsync(buffer, '')
+      const extension = file.name.split('.').pop()?.toLowerCase()
+      let model
+      if (extension === 'glb' || extension === 'gltf') {
+        const source = extension === 'gltf' ? new TextDecoder().decode(buffer) : buffer
+        const gltf = await new GLTFLoader().parseAsync(source, '')
+        model = gltf.scene
+      } else if (extension === 'obj') {
+        model = new OBJLoader().parse(new TextDecoder().decode(buffer))
+      } else if (extension === 'stl') {
+        const geometry = new STLLoader().parse(buffer)
+        geometry.computeVertexNormals()
+        model = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#aab4b9', roughness: 0.68, metalness: 0.08 }))
+      } else if (extension === 'ply') {
+        const geometry = new PLYLoader().parse(buffer)
+        geometry.computeVertexNormals()
+        const hasVertexColors = Boolean(geometry.getAttribute('color'))
+        model = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#aab4b9', vertexColors: hasVertexColors, roughness: 0.72, metalness: 0.04 }))
+      } else {
+        throw new Error('unsupported_model_format')
+      }
       const base = (file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'model').replace(/^-|-$/g, '')
       let id = base
       let suffix = 2
@@ -672,7 +707,6 @@ function StudioViewport({ selected, onSelect, mode, layers, reconstructing, sour
       root.name = id
       root.userData.rootId = id
       root.userData.meta = { name: file.name.replace(/\.[^.]+$/, ''), type: 'Imported model', confidence: 'Imported', locked: false, visible: true }
-      const model = gltf.scene
       root.add(model)
       const initialBox = new THREE.Box3().setFromObject(model)
       const size = initialBox.getSize(new THREE.Vector3())
