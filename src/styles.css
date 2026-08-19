@@ -85,7 +85,7 @@ svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-l
 .button-ghost { border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.02); }
 .button svg { width: 16px; }
 
-.world-wrap { position: relative; height: 630px; display: grid; place-items: center; transform: translate(100px, 100px); }
+.world-wrap { position: relative; height: 630px; display: grid; place-items: center; transform: translate(140px, 100px); }
 .world-glow { position: absolute; width: 70%; height: 32%; border-radius: 50%; background: rgba(221,118,111,.16); filter: blur(100px); }
 .world-platform {
   position: relative; width: min(640px, 46vw); aspect-ratio: 1.45; transform: perspective(900px) rotateX(58deg) rotateZ(-7deg);
@@ -184,7 +184,7 @@ svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-l
 .footer-bottom{min-height:115px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center}.footer-bottom .brand{color:#1b1718;font-family:'DM Sans',Arial,sans-serif;font-size:17px;font-weight:500;letter-spacing:-.015em}.footer-bottom p{text-align:center;font-size:8px;line-height:1.55;letter-spacing:.15em;color:#625c5a}.footer-bottom>div{justify-self:end;display:flex;gap:20px;font-size:8px;letter-spacing:.13em}.footer-bottom>div a:hover{text-decoration:underline}
 
 /* Generated editorial artwork */
-.hero-filter-def{position:absolute;width:0;height:0;pointer-events:none}.hero-world-image{position:relative;z-index:2;width:min(940px,70vw);height:auto;max-height:none;object-fit:contain;opacity:.96;filter:url(#spatial-field-alpha) brightness(1.08) contrast(1.12) drop-shadow(0 24px 36px rgba(0,0,0,.48));animation:worldFloat 7s ease-in-out infinite alternate}
+.hero-filter-def{position:absolute;width:0;height:0;pointer-events:none}.hero-world-image{position:relative;z-index:2;width:min(990px,73vw);height:auto;max-height:none;object-fit:contain;opacity:.96;filter:url(#spatial-field-alpha) brightness(1.08) contrast(1.12) drop-shadow(0 24px 36px rgba(0,0,0,.48));animation:worldFloat 7s ease-in-out infinite alternate}
 @keyframes worldFloat{to{transform:translateY(-9px)}}
 .section-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.visual-card .section-art{object-position:center}.visual-card::after,.about-visual::after{content:'';position:absolute;inset:0;width:auto;height:auto;border:0;border-radius:0;opacity:1;background:linear-gradient(180deg,transparent 55%,rgba(14,11,12,.36));pointer-events:none}.about-visual::before{display:none}.about-visual .section-art{object-position:center}
 .research-feature-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}.simulation-stage::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(24,15,16,.06),rgba(24,15,16,.18));pointer-events:none}.stage-status{z-index:3}
