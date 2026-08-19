@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 
+const StudioViewport = import.meta.env.DEV ? React.lazy(() => import('./StudioViewport')) : null
+
 const CONTACT_EMAIL = 'info@primis3d.com'
 const FORM_API_URL = (import.meta.env.VITE_FORM_API_URL || 'https://primis-forms.primis3d-atlas-api.workers.dev').replace(/\/$/, '')
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAAETuH7GYM34LZwWL'
@@ -238,7 +240,7 @@ const researchArticles = [
       'Atlas is intended to reduce the manual work between visual capture and a scene that can be edited, instrumented, and loaded into a simulation pipeline.'
     ],
     sections: [
-      { title: 'A measurable environment', paragraphs: ['Real-world scale allows a simulator to reason about clearance, reach, collision, travel time, and sensor coverage. Objects remain separate so that researchers can remove, replace, articulate, or instrument them.'] },
+      { title: 'A measurable environment', paragraphs: ['Real-world scale allows a simulator to reason about clearance, reach, collision, travel time, and sensor coverage. Objects remain separate so that researchers can remove, replace, reposition, or instrument them.'] },
       { title: 'Repeatable operational questions', paragraphs: ['The same scene can support many experiments without changing the physical site. Teams can compare layouts, rehearse routes, study failure conditions, and evaluate proposed interventions under controlled conditions.'], points: ['Robot and vehicle navigation', 'Industrial process planning', 'Safety and accessibility studies', 'Sensor and camera placement'] },
       { title: 'A living digital twin', paragraphs: ['A useful twin should evolve with the physical environment. Future work includes aligning repeated captures, tracking structural changes, and preserving the relationship between reconstructed geometry and operational data.'] }
     ],
@@ -246,23 +248,7 @@ const researchArticles = [
     quote: 'The physical site becomes a testable system rather than a static scan.'
   },
   {
-    slug: 'articulated-models', number: '04', category: 'CAD & ARTICULATION', title: 'Reconstructing assemblies that can move',
-    deck: 'Multicomponent models, mechanical relationships, and joint articulation turn captured objects into editable functional systems.',
-    hero: { type: 'image', src: '/assets/research-manipulation.jpg' }, indexImage: '/assets/research-manipulation.jpg',
-    overview: [
-      'Many objects are not single rigid meshes. Doors rotate around hinges, drawers translate along rails, tools contain moving components, and industrial assemblies expose constrained degrees of freedom.',
-      'Primis explores how reconstruction can identify components and preserve the relationships required for CAD remodeling, simulation, and interaction.'
-    ],
-    sections: [
-      { title: 'From one mesh to an assembly', paragraphs: ['Separating a captured object into meaningful components makes it possible to edit, replace, measure, and simulate each part independently. The resulting hierarchy can serve as a reference for parametric remodeling or as a directly manipulable scene asset.'] },
-      { title: 'Joint-aware reconstruction', paragraphs: ['A useful articulated model specifies how components may move. Hinges, sliders, pivots, limits, and parent-child relationships encode the kinematic structure behind visible geometry.'], points: ['Component segmentation and hierarchy', 'Joint type and axis estimation', 'Motion limits and collision constraints', 'Export into CAD and simulation workflows'] },
-      { title: 'Learning through interaction', paragraphs: ['Articulated environments expand the actions a robot can rehearse. Opening, closing, rotating, inserting, and removing become scene-level capabilities rather than manually scripted exceptions.'] }
-    ],
-    secondary: { type: 'image', src: '/assets/primis-world-model-v4.png', fit: 'contain', caption: 'Objects represented as bounded components inside a larger spatial system.' },
-    quote: 'Geometry describes shape. Articulation describes what the object can do.'
-  },
-  {
-    slug: 'designed-worlds', number: '05', category: 'GAMES & ARCHITECTURE', title: 'Using reconstruction as a design substrate',
+    slug: 'designed-worlds', number: '04', category: 'GAMES & ARCHITECTURE', title: 'Using reconstruction as a design substrate',
     deck: 'A captured place can become the measurable starting point for game environments, architectural studies, virtual production, and spatial composition.',
     hero: { type: 'image', src: '/assets/games-desert.jpg' }, indexImage: '/assets/games-desert.jpg',
     overview: [
@@ -278,7 +264,7 @@ const researchArticles = [
     quote: 'Reconstruction is most powerful when it becomes the beginning of design, not the end.'
   },
   {
-    slug: 'spatial-datasets', number: '06', category: 'SPATIAL AI DATA', title: 'Generating structured data from reconstructed worlds',
+    slug: 'spatial-datasets', number: '05', category: 'SPATIAL AI DATA', title: 'Generating structured data from reconstructed worlds',
     deck: 'One aligned environment can produce geometry, depth, segmentation, trajectories, relationships, and controlled variations for training and evaluation.',
     hero: { type: 'video', src: '/assets/cap-synthetic.mp4' }, indexImage: '/assets/cap-synthetic.jpg',
     overview: [
@@ -361,7 +347,7 @@ function ResearchPage() {
           <span>RESEARCH &amp; SIMULATION</span>
           <h1>Ideas for machines<br /><em>that understand space.</em></h1>
         </div>
-        <p>Primis research explores the systems built on reconstructed worlds: spatial reasoning, robot learning, simulation, articulated objects, design workflows, and structured AI data.</p>
+        <p>Primis research explores the systems built on reconstructed worlds: spatial reasoning, robot learning, simulation, game and architecture workflows, and structured AI data.</p>
       </section>
       <section className="research-publications" aria-label="Primis research directions">
         {researchArticles.map(article => (
@@ -496,21 +482,86 @@ function AtlasOverview() {
 }
 
 const demoObjects = [
-  { id: 'workbench', name: 'Workbench', type: 'Surface', confidence: '98%' },
-  { id: 'robot', name: 'Robot arm', type: 'Articulated', confidence: '96%' },
-  { id: 'crate', name: 'Storage crate', type: 'Container', confidence: '94%' },
-  { id: 'floor', name: 'Workshop floor', type: 'Structure', confidence: '99%' }
+  { id: 'workbench', name: 'Workbench', type: 'Surface', confidence: '98%', position: [0.15, 0, 0.25], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [3.45, 1.08, 1.38], visible: true, locked: false },
+  { id: 'robot', name: 'Robot arm', type: 'Articulated · 6 DOF', confidence: '96%', position: [0.78, 1.16, 0.18], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [1.62, 1.6, 0.5], visible: true, locked: false },
+  { id: 'crate', name: 'Storage crate', type: 'Container', confidence: '94%', position: [-2.02, 0, 0.7], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [1.02, 0.78, 0.92], visible: true, locked: false },
+  { id: 'floor', name: 'Workshop floor', type: 'Structure', confidence: '99%', position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [9.1, 0.09, 6.6], visible: true, locked: true },
+  { id: 'shelf', name: 'Storage rack', type: 'Structure', confidence: '95%', position: [-3.2, 0, -1.78], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [1.65, 2.7, 0.68], visible: true, locked: false },
+  { id: 'monitor', name: 'Control display', type: 'Electronic', confidence: '93%', position: [-0.72, 1.18, 0.2], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [0.92, 0.87, 0.07], visible: true, locked: false },
+  { id: 'scanner', name: 'Depth scanner', type: 'Sensor', confidence: '97%', position: [2.45, 0, -1.5], rotation: [0, 0, 0], scale: [1, 1, 1], dimensions: [0.84, 2.05, 0.84], visible: true, locked: false },
 ]
 
 function DemoStudio() {
   const [mode, setMode] = useState('Scene')
   const [selected, setSelected] = useState('robot')
+  const [sceneObjects, setSceneObjects] = useState(demoObjects)
+  const [studioApi, setStudioApi] = useState(null)
+  const [tool, setTool] = useState('translate')
+  const [transformSpace, setTransformSpace] = useState('world')
+  const [snapEnabled, setSnapEnabled] = useState(true)
+  const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false })
+  const [exportMenu, setExportMenu] = useState(false)
+  const [studioStatus, setStudioStatus] = useState('')
+  const [busyAction, setBusyAction] = useState('')
   const [sourceImage, setSourceImage] = useState('')
   const [reconstructing, setReconstructing] = useState(false)
   const [complete, setComplete] = useState(false)
   const [layers, setLayers] = useState({ labels: true, geometry: true, path: true })
   const [question, setQuestion] = useState('Where is the robot arm?')
   const [answer, setAnswer] = useState('The robot arm is 1.2 m ahead, mounted beside the workbench.')
+  const selectedObject = sceneObjects.find(object => object.id === selected) || sceneObjects[0]
+
+  useEffect(() => {
+    if (!studioApi) return undefined
+    const onKeyDown = event => {
+      const target = event.target
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable) return
+      const key = event.key.toLowerCase()
+      const command = event.ctrlKey || event.metaKey
+      if (command && key === 'z') { event.preventDefault(); event.shiftKey ? studioApi.redo() : studioApi.undo(); return }
+      if (command && key === 'd') { event.preventDefault(); studioApi.cloneSelected(); return }
+      if (key === 'delete' || key === 'backspace') { event.preventDefault(); studioApi.deleteSelected(); return }
+      if (key === 'w') setTool('translate')
+      if (key === 'e') setTool('rotate')
+      if (key === 'r') setTool('scale')
+      if (key === 'f') studioApi.frameSelected()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [studioApi])
+
+  useEffect(() => {
+    if (!studioStatus) return undefined
+    const timeout = window.setTimeout(() => setStudioStatus(''), 3200)
+    return () => window.clearTimeout(timeout)
+  }, [studioStatus])
+
+  const exportScene = async format => {
+    if (!studioApi || busyAction) return
+    setBusyAction(format)
+    setExportMenu(false)
+    try {
+      const filename = await studioApi.exportScene(format)
+      setStudioStatus(`${filename} exported`)
+    } catch (error) {
+      console.error(error)
+      setStudioStatus('Export failed — try another format')
+    } finally { setBusyAction('') }
+  }
+
+  const importModel = async event => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !studioApi) return
+    setBusyAction('import')
+    try {
+      await studioApi.importModel(file)
+      setStudioStatus(`${file.name} added to scene`)
+    } catch (error) {
+      console.error(error)
+      setStudioStatus('Import failed — use a self-contained GLB file')
+    } finally { setBusyAction('') }
+  }
 
   const loadImage = (event) => {
     const file = event.target.files?.[0]
@@ -555,6 +606,10 @@ function DemoStudio() {
               {sourceImage ? <img src={sourceImage} alt="Uploaded source" /> : <><SparkIcon /><strong>Load a source image</strong><small>JPG or PNG · single view</small></>}
               <input type="file" accept="image/png,image/jpeg" onChange={loadImage} />
             </label>
+            <label className={`model-import-button ${busyAction === 'import' ? 'is-busy' : ''}`}>
+              <span>{busyAction === 'import' ? 'Importing model…' : '+ Import 3D model'}</span><small>GLB</small>
+              <input type="file" accept=".glb,model/gltf-binary" onChange={importModel} disabled={!studioApi || busyAction === 'import'} />
+            </label>
             <div className="source-meta"><span>Input</span><b>{sourceImage ? 'Custom image' : 'Workshop sample'}</b></div>
             <div className="source-meta"><span>Output</span><b>Metric 3D scene</b></div>
             <div className="layer-controls">
@@ -566,14 +621,27 @@ function DemoStudio() {
           </aside>
 
           <div className={`scene-viewport mode-${mode.toLowerCase()} ${complete ? 'is-complete' : ''}`}>
-            {sourceImage && <div className="source-wash" style={{ backgroundImage: `url(${sourceImage})` }} />}
-            <div className="viewport-grid" />
-            <div className="demo-platform">
-              <button className={`demo-mesh mesh-table ${selected === 'workbench' ? 'selected' : ''}`} onClick={() => setSelected('workbench')} aria-label="Select workbench" />
-              <button className={`demo-mesh mesh-robot ${selected === 'robot' ? 'selected' : ''}`} onClick={() => setSelected('robot')} aria-label="Select robot arm"><i /><i /><i /></button>
-              <button className={`demo-mesh mesh-crate ${selected === 'crate' ? 'selected' : ''}`} onClick={() => setSelected('crate')} aria-label="Select crate" />
-              {layers.path && <div className="motion-path"><i /><i /><i /></div>}
-              {layers.labels && <><span className="mesh-label robot-label">ROBOT_ARM_01</span><span className="mesh-label table-label">WORKBENCH_01</span></>}
+            {StudioViewport ? (
+              <React.Suspense fallback={<div className="studio-viewport-loading">Initialising 3D viewport…</div>}>
+                <StudioViewport selected={selected} onSelect={setSelected} mode={mode} layers={layers} reconstructing={reconstructing} sourceImage={sourceImage} tool={tool} transformSpace={transformSpace} snapEnabled={snapEnabled} onReady={setStudioApi} onSceneChange={setSceneObjects} onHistoryChange={setHistoryState} />
+              </React.Suspense>
+            ) : null}
+            <div className="studio-edit-toolbar" aria-label="Scene editing tools">
+              <button type="button" onClick={() => studioApi?.undo()} disabled={!historyState.canUndo} title="Undo (Ctrl/⌘ Z)">↶</button>
+              <button type="button" onClick={() => studioApi?.redo()} disabled={!historyState.canRedo} title="Redo (Ctrl/⌘ Shift Z)">↷</button>
+              <i />
+              {[['translate', 'Move', 'W'], ['rotate', 'Rotate', 'E'], ['scale', 'Scale', 'R']].map(([value, label, shortcut]) => (
+                <button type="button" className={tool === value ? 'active' : ''} onClick={() => setTool(value)} key={value} title={`${label} (${shortcut})`}>{label}<kbd>{shortcut}</kbd></button>
+              ))}
+              <i />
+              <button type="button" className={snapEnabled ? 'active' : ''} onClick={() => setSnapEnabled(value => !value)} title="Toggle metric snapping">Snap</button>
+              <button type="button" onClick={() => setTransformSpace(value => value === 'world' ? 'local' : 'world')} title="Toggle transform orientation">{transformSpace === 'world' ? 'World' : 'Local'}</button>
+              <button type="button" onClick={() => studioApi?.cloneSelected()} title="Duplicate (Ctrl/⌘ D)">Clone</button>
+              <button type="button" onClick={() => studioApi?.deleteSelected()} disabled={selectedObject?.locked} title="Delete selected object">Delete</button>
+              <div className="studio-export-control">
+                <button type="button" className={exportMenu ? 'active' : ''} onClick={() => setExportMenu(value => !value)} disabled={Boolean(busyAction)}>{busyAction && busyAction !== 'import' ? 'Exporting…' : 'Export'}</button>
+                {exportMenu && <div className="studio-export-menu"><button type="button" onClick={() => exportScene('glb')}><strong>GLB</strong><span>Engines &amp; web</span></button><button type="button" onClick={() => exportScene('usd')}><strong>USD</strong><span>ASCII .usda</span></button><button type="button" onClick={() => exportScene('usdz')}><strong>USDZ</strong><span>Apple &amp; AR</span></button></div>}
+              </div>
             </div>
             <div className="viewport-top"><span><i /> {reconstructing ? 'PROCESSING SOURCE' : complete ? 'SCENE READY' : 'SAMPLE SCENE'}</span><span>METRIC / 1:1</span></div>
             <div className="axis-widget"><b>Y</b><i /><em>X</em><span>Z</span></div>
@@ -582,21 +650,35 @@ function DemoStudio() {
           </div>
 
           <aside className="studio-sidebar objects-panel">
-            <div className="panel-title">SCENE OBJECTS <b>{demoObjects.length}</b></div>
+            <div className="panel-title">SCENE OBJECTS <b>{sceneObjects.length}</b></div>
             <div className="object-list">
-              {demoObjects.map(object => (
-                <button className={selected === object.id ? 'active' : ''} key={object.id} onClick={() => setSelected(object.id)}>
-                  <i /><span><strong>{object.name}</strong><small>{object.type}</small></span><em>{object.confidence}</em>
-                </button>
+              {sceneObjects.map(object => (
+                <div className={`object-row ${selected === object.id ? 'active' : ''} ${object.visible ? '' : 'is-hidden'}`} key={object.id}>
+                  <button className="object-select" type="button" onClick={() => setSelected(object.id)}>
+                    <i /><span><strong>{object.name}</strong><small>{object.type}</small></span><em>{object.confidence}</em>
+                  </button>
+                  <div className="object-row-actions">
+                    <button type="button" className={object.visible ? 'active' : ''} onClick={() => studioApi?.setVisible(object.id, !object.visible)} aria-label={`${object.visible ? 'Hide' : 'Show'} ${object.name}`} title={object.visible ? 'Hide' : 'Show'}>{object.visible ? '●' : '○'}</button>
+                    <button type="button" className={object.locked ? 'active' : ''} onClick={() => studioApi?.setLocked(object.id, !object.locked)} aria-label={`${object.locked ? 'Unlock' : 'Lock'} ${object.name}`} title={object.locked ? 'Unlock' : 'Lock'}>{object.locked ? '◆' : '◇'}</button>
+                  </div>
+                </div>
               ))}
             </div>
             <div className="object-inspector">
               <div className="panel-title">SELECTION</div>
-              <h3>{demoObjects.find(object => object.id === selected)?.name || 'Scene object'}</h3>
-              <dl><div><dt>Position</dt><dd>1.24, 0.82, 2.10 m</dd></div><div><dt>Scale</dt><dd>Real world / metric</dd></div><div><dt>Mesh</dt><dd>Editable</dd></div></dl>
+              <input className="inspector-name-input" key={`${selectedObject.id}-${selectedObject.name}`} defaultValue={selectedObject.name} aria-label="Object name" onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} onBlur={event => studioApi?.renameObject(selectedObject.id, event.currentTarget.value)} />
+              <p className="selection-type">{selectedObject.type}</p>
+              <div className="transform-editor">
+                {[['position', 'Position', 'm'], ['rotation', 'Rotation', '°'], ['scale', 'Scale', '×']].map(([channel, label, unit]) => (
+                  <div className="transform-channel" key={`${selectedObject.id}-${channel}`}><span>{label}</span><div>{['x', 'y', 'z'].map((axis, index) => <label key={axis}><b>{axis}</b><input key={`${selectedObject.id}-${channel}-${axis}-${selectedObject[channel]?.[index]}`} type="number" step={channel === 'rotation' ? 1 : channel === 'scale' ? .1 : .01} defaultValue={selectedObject[channel]?.[index] ?? 0} disabled={selectedObject.locked} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} onBlur={event => studioApi?.setTransformValue(selectedObject.id, channel, axis, event.currentTarget.value)} /><em>{unit}</em></label>)}</div></div>
+                ))}
+              </div>
+              <dl><div><dt>Dimensions</dt><dd>{selectedObject.dimensions?.map(value => Number(value).toFixed(2)).join(' × ')} m</dd></div><div><dt>Scale</dt><dd>Real world / metric</dd></div><div><dt>Geometry</dt><dd>Editable mesh</dd></div></dl>
+              <div className="inspector-actions"><button type="button" onClick={() => studioApi?.frameSelected()}>Frame</button><button type="button" onClick={() => studioApi?.cloneSelected()}>Duplicate</button></div>
             </div>
           </aside>
         </div>
+        {studioStatus && <div className="studio-toast" role="status">{studioStatus}</div>}
       </div>
     </section>
   )
@@ -860,17 +942,16 @@ function LegalPage({ type }) {
 }
 
 const worldCatalog = [
-  { name: 'Frontier Basin', family: 'Connected terrain', prompt: 'A traversable world with layered terrain, connected waterways, open plains and elevated regions.' },
-  { name: 'Granite Reach', family: 'Mountain corridor', prompt: 'A high-relief world organized around ridges, passes and sheltered valleys.' },
-  { name: 'Delta Fields', family: 'River network', prompt: 'A broad landscape shaped by branching channels, islands and low-lying terrain.' },
-  { name: 'Verdant Shelf', family: 'Forest plateau', prompt: 'A raised green shelf with dense boundaries, open clearings and connected paths.' },
-  { name: 'North Passage', family: 'Coastal terrain', prompt: 'A continuous coastal world with cliffs, inlets and navigable interior regions.' },
-  { name: 'Glasswater', family: 'Lake district', prompt: 'An open world structured around linked lakes, narrow crossings and rolling terrain.' },
-  { name: 'Ember Caldera', family: 'Volcanic basin', prompt: 'A circular basin with steep walls, radial routes and a complex central depression.' },
-  { name: 'Saffron Divide', family: 'Desert shelf', prompt: 'A dry layered world with terraces, channels and long-range lines of sight.' },
-  { name: 'Hollow Ring', family: 'Circular terrain', prompt: 'A ring-shaped environment with interior paths, vertical transitions and enclosed space.' },
-  { name: 'Meadow Run', family: 'Open watershed', prompt: 'A gently graded watershed with clear movement corridors and distant boundaries.' },
-  { name: 'Slate Expanse', family: 'Structural study', prompt: 'A neutral world study focused on scale, topology and spatial continuity.' }
+  { name: 'Woodland Trail', family: 'Forest path', category: 'Outdoor', prompt: 'A reconstructed woodland route with trees, changing elevation, open ground, and clear traversable boundaries.' },
+  { name: 'Coastal Bluff', family: 'Coastal site', category: 'Outdoor', prompt: 'A coastal reconstruction preserving cliffs, exposed ground, structures, and the scale of the surrounding landscape.' },
+  { name: 'Garden Court', family: 'Courtyard landscape', category: 'Outdoor', prompt: 'An enclosed garden with planting, paths, walls, and separated scene elements ready for editing.' },
+  { name: 'Urban Passage', family: 'Street corridor', category: 'Outdoor', prompt: 'A street-scale reconstruction with buildings, road geometry, street objects, and connected pedestrian space.' },
+  { name: 'Quarry Terrace', family: 'Industrial landscape', category: 'Outdoor', prompt: 'A large outdoor worksite with layered terrain, access routes, equipment zones, and measurable elevation changes.' },
+  { name: 'Design Studio', family: 'Creative workspace', category: 'Indoor', prompt: 'A room-scale reconstruction with desks, storage, equipment, and individually editable workspace objects.' },
+  { name: 'Robotics Lab', family: 'Technical workspace', category: 'Indoor', prompt: 'A structured laboratory scene with work cells, articulated equipment, clearances, and navigable floor space.' },
+  { name: 'Apartment Interior', family: 'Residential space', category: 'Indoor', prompt: 'A connected home interior with furniture, openings, room boundaries, and real-world spatial relationships.' },
+  { name: 'Warehouse Bay', family: 'Industrial interior', category: 'Indoor', prompt: 'A metric warehouse reconstruction with racks, containers, aisles, and space for navigation and manipulation.' },
+  { name: 'Gallery Hall', family: 'Exhibition space', category: 'Indoor', prompt: 'An open interior with display objects, architectural surfaces, sightlines, and a clean editable hierarchy.' }
 ]
 
 function PlaceholderTerrain({ compact = false, variant = 0, channel = '' }) {
@@ -885,11 +966,31 @@ function PlaceholderTerrain({ compact = false, variant = 0, channel = '' }) {
   )
 }
 
-function WorldViewPlaceholder({ index, type }) {
+function PlaceholderRoom({ compact = false, variant = 0, channel = '' }) {
   return (
-    <div className={`world-view-placeholder ${type} view-${index}`}>
+    <div className={`placeholder-room ${compact ? 'is-compact' : ''} ${channel}`} data-variant={variant % 5}>
+      <div className="room-shell">
+        <i className="room-wall room-wall-back" /><i className="room-wall room-wall-side" /><i className="room-floor" />
+        <div className="room-objects"><b /><b /><b /><b /><b /><b /><b /></div>
+        <div className="room-path" />
+      </div>
+    </div>
+  )
+}
+
+function PlaceholderReconstruction({ category, compact = false, variant = 0, channel = '' }) {
+  return category === 'Indoor'
+    ? <PlaceholderRoom compact={compact} variant={variant} channel={channel} />
+    : <PlaceholderTerrain compact={compact} variant={variant} channel={channel} />
+}
+
+function WorldViewPlaceholder({ index, type, category }) {
+  return (
+    <div className={`world-view-placeholder ${type} view-${index} ${category === 'Indoor' ? 'is-indoor' : 'is-outdoor'}`}>
       <span>{String(index).padStart(2, '0')}</span>
-      <div className="world-view-ground"><i /><i /><i /><i /><i /><i /></div>
+      {category === 'Indoor'
+        ? <div className="world-view-room"><i /><i /><i /><i /><i /><i /></div>
+        : <div className="world-view-ground"><i /><i /><i /><i /><i /><i /></div>}
     </div>
   )
 }
@@ -897,8 +998,9 @@ function WorldViewPlaceholder({ index, type }) {
 function WorldsGallery() {
   const [activeWorld, setActiveWorld] = useState(0)
   const [viewMode, setViewMode] = useState('orbit')
-  const featuredWorlds = worldCatalog.slice(0, 5)
+  const featuredWorlds = worldCatalog
   const world = featuredWorlds[activeWorld]
+  const worldGroups = ['Outdoor', 'Indoor'].map(category => ({ category, worlds: featuredWorlds.map((item, index) => ({ ...item, index })).filter(item => item.category === category) }))
   const views = {
     orbit: { label: 'Orbit', description: 'Read the complete terrain, boundaries, and connected regions from above.' },
     walk: { label: 'Walk', description: 'Move through the world at ground level and inspect it at human scale.' },
@@ -917,13 +1019,13 @@ function WorldsGallery() {
         <div className="world-exhibition-title">
           <h1>Worlds built<br /><em>to be explored.</em></h1>
         </div>
-        <p>Atlas is designed to generate connected 3D environments that can be viewed, edited, measured, and used as working spatial models.</p>
+        <p>Explore five outdoor and five indoor reconstructions. Each is designed to be viewed, edited, measured, and used as a working spatial model.</p>
       </header>
 
       <div className="world-stage">
         <div className="world-stage-model" role="img" aria-label={`Placeholder 3D model for ${world.name}`}>
-          <div className="world-stage-chip"><LogoMark /><span>PLACEHOLDER MODEL</span></div>
-          <PlaceholderTerrain variant={activeWorld} />
+          <div className="world-stage-chip"><LogoMark /><span>{world.category.toUpperCase()} / PLACEHOLDER MODEL</span></div>
+          <PlaceholderReconstruction category={world.category} variant={activeWorld} />
           <div className="world-stage-axis" aria-hidden="true"><i /><b>X</b><em>Y</em><span>Z</span></div>
         </div>
 
@@ -935,22 +1037,29 @@ function WorldsGallery() {
             {Object.entries(views).map(([slug, view]) => <button id={`world-view-tab-${slug}`} aria-controls="world-view-panel" key={slug} role="tab" aria-selected={viewMode === slug} tabIndex={viewMode === slug ? 0 : -1} className={viewMode === slug ? 'active' : ''} onClick={() => setViewMode(slug)}>{view.label}</button>)}
           </div>
           <div id="world-view-panel" className={`world-selected-view mode-${viewMode}`} role="tabpanel" aria-labelledby={`world-view-tab-${viewMode}`}>
-            {viewMode === 'data' ? <PlaceholderTerrain variant={activeWorld} channel="channel-semantic" /> : <WorldViewPlaceholder index={activeWorld % 3 + 1} type={viewMode} />}
+            {viewMode === 'data' ? <PlaceholderReconstruction category={world.category} variant={activeWorld} channel="channel-semantic" /> : <WorldViewPlaceholder index={activeWorld % 3 + 1} type={viewMode} category={world.category} />}
           </div>
           <p className="world-view-description">{views[viewMode].description}</p>
         </aside>
       </div>
 
       <section className="world-library" aria-labelledby="world-library-title">
-        <div className="world-library-heading"><h2 id="world-library-title">Choose an environment.</h2><p>Each placeholder represents a different spatial structure. Real generated models can replace these directly.</p></div>
-        <div className="world-library-grid" role="group" aria-label="Select world">
-          {featuredWorlds.map((item, index) => (
-            <button className={activeWorld === index ? 'active' : ''} onClick={() => setActiveWorld(index)} key={item.name} aria-label={`Show ${item.name}`}>
-              <div><PlaceholderTerrain compact variant={index} /></div>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{item.name}</strong>
-              <small>{item.family}</small>
-            </button>
+        <div className="world-library-heading"><h2 id="world-library-title">Ten reconstructed spaces.</h2><p>Five outdoor environments and five indoor environments. The placeholders can be replaced directly as your finished reconstructions become available.</p></div>
+        <div className="world-library-groups">
+          {worldGroups.map(group => (
+            <section className="world-library-group" aria-labelledby={`world-group-${group.category.toLowerCase()}`} key={group.category}>
+              <header><h3 id={`world-group-${group.category.toLowerCase()}`}>{group.category}</h3><span>05 RECONSTRUCTIONS</span></header>
+              <div className="world-library-grid" role="group" aria-label={`Select ${group.category.toLowerCase()} reconstruction`}>
+                {group.worlds.map(item => (
+                  <button className={activeWorld === item.index ? 'active' : ''} onClick={() => setActiveWorld(item.index)} key={item.name} aria-label={`Show ${item.name}`}>
+                    <div><PlaceholderReconstruction category={item.category} compact variant={item.index} /></div>
+                    <span>{item.category === 'Outdoor' ? 'OUT' : 'IN'} / {String((item.index % 5) + 1).padStart(2, '0')}</span>
+                    <strong>{item.name}</strong>
+                    <small>{item.family}</small>
+                  </button>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       </section>
@@ -960,7 +1069,7 @@ function WorldsGallery() {
         <div className="world-data-grid">
           {channels.map(channel => (
             <article key={channel.slug}>
-              <div className="world-data-visual"><PlaceholderTerrain variant={activeWorld + channel.index} channel={`channel-${channel.slug}`} /></div>
+              <div className="world-data-visual"><PlaceholderReconstruction category={world.category} variant={activeWorld + channel.index} channel={`channel-${channel.slug}`} /></div>
               <div className="world-data-copy"><span>{channel.eyebrow}</span><h3>{channel.title}</h3><p>{channel.text}</p></div>
             </article>
           ))}
@@ -1041,6 +1150,7 @@ function App() {
   if (researchArticle) return <ResearchArticlePage article={researchArticle} />
   if (path === '/research') return <ResearchPage />
   if (path === '/worlds') return <WorldsPage />
+  if (import.meta.env.DEV && path === '/studio-preview') return <StudioPage />
   if (path === '/studio') return <WaitlistPage />
   if (path === '/confirm') return <ConfirmWaitlistPage />
   if (path === '/contact') return <ContactPage />
