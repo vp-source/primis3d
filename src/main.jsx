@@ -689,64 +689,17 @@ function StudioPage() {
 }
 
 function WaitlistPage() {
-  const [waitlistEmail, setWaitlistEmail] = useState('')
-  const [turnstileToken, setTurnstileToken] = useState('')
-  const [verificationError, setVerificationError] = useState(false)
-  const [turnstileCycle, setTurnstileCycle] = useState(0)
-  const [status, setStatus] = useState(() => new URLSearchParams(window.location.search).get('waitlist') || 'idle')
-
-  const submitAccess = async (event) => {
-    event.preventDefault()
-    setStatus('submitting')
-    const data = new FormData(event.currentTarget)
-    try {
-      const result = await submitForm('/api/waitlist', {
-        email: waitlistEmail.trim(),
-        website: data.get('website') || '',
-        turnstileToken,
-      })
-      setWaitlistEmail('')
-      setStatus(result.status === 'registered' ? 'registered' : 'confirmation_sent')
-    } catch (error) {
-      setStatus(error.message === 'rate_limited' ? 'rate_limited' : 'error')
-    } finally {
-      setTurnstileToken('')
-      setTurnstileCycle(current => current + 1)
-    }
-  }
-
   return (
-    <main className="waitlist-page">
+    <main className="waitlist-page pilot-only-page">
       <Header />
-      <section className="waitlist-hero">
-        <div className="waitlist-intro">
-          <h1>Join the Atlas<br /><em>waitlist.</em></h1>
-          <p>Ask Primis to send you one email when the first public Atlas release is available. No recurring product marketing.</p>
-          <form className="waitlist-signup" onSubmit={submitAccess}>
-            <label className="sr-only" htmlFor="waitlist-email">Email address</label>
-            <input id="waitlist-email" name="waitlistEmail" type="email" autoComplete="email" maxLength="254" value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="Enter your email address" required />
-            <input className="form-honeypot" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" />
-            <button type="submit" disabled={status === 'submitting' || !turnstileToken}>{status === 'submitting' ? 'Sending…' : 'Sign up'} <Arrow /></button>
-          </form>
-          <Turnstile theme="dark" onToken={setTurnstileToken} onError={setVerificationError} cycle={turnstileCycle} />
-          <p className="form-privacy-note">By signing up, you consent to one Atlas launch email. No recurring marketing. <a href="/privacy">Privacy details</a>.</p>
-          {verificationError && <p className="mail-draft-status form-error" role="alert">Browser verification was blocked. Allow challenges.cloudflare.com or email us directly.</p>}
-          {status === 'registered' && <p className="mail-draft-status" role="status">This email is already registered.</p>}
-          {status === 'confirmation_sent' && <p className="mail-draft-status" role="status">A confirmation email has been sent.</p>}
-          {status === 'confirmed' && <p className="mail-draft-status" role="status">Your email has been confirmed.</p>}
-          {status === 'expired' && <p className="mail-draft-status" role="status">That confirmation link expired. Enter your email again to receive a new one.</p>}
-          {status === 'invalid' && <p className="mail-draft-status form-error" role="status">That confirmation link is invalid or has already been used.</p>}
-          {status === 'error' && <p className="mail-draft-status form-error" role="alert">We could not process the request. Please try again shortly.</p>}
-          {status === 'rate_limited' && <p className="mail-draft-status form-error" role="alert">Please wait before trying again.</p>}
-        </div>
-
-        <section className="pilot-request" aria-labelledby="pilot-title">
-          <div className="access-or">or</div>
-          <h2 id="pilot-title">Request a pilot.</h2>
-          <p>Need to reconstruct a real environment for robotics, simulation, spatial AI, or 3D production? Tell us about the scene and the outcome you need.</p>
+      <section className="pilot-only-hero" aria-labelledby="pilot-title">
+        <span>ATLAS / PILOT PROGRAM</span>
+        <h1 id="pilot-title">Atlas is open<br /><em>for pilots.</em></h1>
+        <p>Atlas is currently available through selected pilot projects. If your team is working in robotics, simulation, spatial AI, architecture, or 3D production, tell us what you want to reconstruct and what the resulting world needs to do.</p>
+        <div className="pilot-only-actions">
           <a className="button pilot-request-button" href="/contact">Request a pilot <Arrow /></a>
           <a className="pilot-email" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-        </section>
+        </div>
       </section>
       <footer className="waitlist-legal-footer">
         <span>© 2026 Primis</span>
@@ -829,7 +782,7 @@ function LegalPage({ type }) {
         {isPrivacy ? (
           <>
             <h1>Privacy Policy</h1>
-            <p className="legal-subtitle">Datenschutzerklärung — last updated 18 August 2026</p>
+            <p className="legal-subtitle">Datenschutzerklärung — last updated 19 August 2026</p>
 
             <h2>1. Controller</h2>
             <p>The controller responsible for data processing on this website (Art. 4(7) GDPR) is:</p>
@@ -852,20 +805,20 @@ function LegalPage({ type }) {
             <h2>4. Fonts &amp; media</h2>
             <p>Fonts, images, and videos are served from our own hosting. Loading a normal page does not request fonts or embedded media from Google, YouTube, or another third-party platform.</p>
 
-            <h2>5. Atlas launch notification</h2>
-            <p>If you request the Atlas launch notification, we process your email address solely to send <strong>one email</strong> when Atlas first becomes publicly available. We first send a confirmation link to verify that the address belongs to the person making the request. Unconfirmed requests are deleted after seven days. We do not reuse the address for recurring product marketing.</p>
+            <h2>5. Previous Atlas launch notifications</h2>
+            <p>The public launch-notification form is closed and Primis does not accept new waitlist registrations. If you previously requested the Atlas launch notification, we process your email address solely to send <strong>one email</strong> when Atlas first becomes publicly available. Unconfirmed legacy requests are deleted after seven days. We do not reuse the address for recurring product marketing.</p>
             <p>The legal basis is your consent under Art. 6(1)(a) GDPR. You may withdraw at any time by emailing <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We delete a confirmed address after sending the one-time notice or after withdrawal. If Atlas has not launched within 24 months of confirmation, we delete it unless you renew your request. Limited retention may continue where necessary to establish or defend legal claims.</p>
 
             <h2>6. Contact and pilot enquiries</h2>
-            <p>If you use the contact form, we process your reply address, message, and any optional name or company information solely to deliver and answer the enquiry, discuss a pilot, or take steps requested before a contract. The website form service does not retain the content in the waitlist database; it is transmitted as an email to Primis.</p>
+            <p>If you use the contact form, we process your reply address, message, and any optional name or company information solely to deliver and answer the enquiry, discuss a pilot, or take steps requested before a contract. The website form service transmits the enquiry as an email to Primis and does not store its content in the launch-notification database.</p>
             <p>The legal basis is Art. 6(1)(b) GDPR where your enquiry concerns pre-contractual or contractual steps, and otherwise Art. 6(1)(f) GDPR. Our legitimate interest is responding to relevant business and research enquiries. We normally delete enquiry data within six months after the final response unless a contract, statutory retention duty, or legal claim requires longer retention.</p>
 
             <h2>7. Recipients and international transfers</h2>
-            <p>Website hosting, the Primis mailbox, and transactional email delivery are provided by IONOS SE. Form requests are processed by Cloudflare, Inc. through Cloudflare Workers and Turnstile; confirmed waitlist addresses are stored in a Cloudflare D1 database restricted to the European Union. These providers act as processors for the stated purposes.</p>
-            <p>Cloudflare operates a global network and some technical processing may occur outside the European Economic Area. Where a transfer to a country without an adequacy decision occurs, it is covered by the provider's data processing terms and applicable safeguards, including standard contractual clauses. We do not sell form or waitlist data.</p>
+            <p>Website hosting, the Primis mailbox, and transactional email delivery are provided by IONOS SE. Form requests are processed by Cloudflare, Inc. through Cloudflare Workers and Turnstile; previously confirmed launch-notification addresses are stored in a Cloudflare D1 database restricted to the European Union. These providers act as processors for the stated purposes.</p>
+            <p>Cloudflare operates a global network and some technical processing may occur outside the European Economic Area. Where a transfer to a country without an adequacy decision occurs, it is covered by the provider's data processing terms and applicable safeguards, including standard contractual clauses. We do not sell form data or stored launch-notification data.</p>
 
             <h2>8. Required information and automated decisions</h2>
-            <p>Providing information is voluntary. Without an email address we cannot send the launch notice or reply to an enquiry; optional fields may be left blank. We do not use this website data for automated decision-making or profiling.</p>
+            <p>Providing information is voluntary. Without a reply address we cannot answer a pilot or contact enquiry; optional fields may be left blank. We do not use this website data for automated decision-making or profiling.</p>
 
             <h2>9. Your rights</h2>
             <p>Under the GDPR you have the right to:</p>

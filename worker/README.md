@@ -1,9 +1,10 @@
 # Primis forms API
 
-This Cloudflare Worker keeps the public site static while providing two protected endpoints:
+This Cloudflare Worker keeps the public site static while providing the protected pilot/contact endpoint and maintaining legacy launch-notification confirmations:
 
 - `POST /api/contact` validates an enquiry and sends it to `info@primis3d.com` without storing the message.
-- `POST /api/waitlist` creates a pending entry and emails a seven-day confirmation link. Only confirmed addresses remain on the launch list.
+- `POST /api/waitlist` returns `410 waitlist_closed`; new waitlist registrations are disabled.
+- `GET` or `POST /api/waitlist/confirm` remains available only for confirmation links issued before the waitlist closed.
 
 The D1 database must be created with the EU jurisdiction. Do not create it with the default location and try to change it later; Cloudflare only accepts the jurisdiction at database creation.
 

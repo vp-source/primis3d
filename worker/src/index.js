@@ -1,9 +1,6 @@
 import { connect } from 'cloudflare:sockets'
 import { buildMimeMessage } from './mime.js'
 import { retentionCutoffs } from './retention.js'
-import { buildWaitlistConfirmationEmail } from './waitlist-email.js'
-
-const CONSENT_VERSION = 'atlas-launch-notice-v1-2026-08-18'
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
 
 export default {
@@ -39,6 +36,7 @@ async function route(request, env) {
 
   if (request.method !== 'POST') return json({ ok: false, error: 'not_found' }, 404, request, env)
   if (!isAllowedOrigin(request, env)) return json({ ok: false, error: 'forbidden' }, 403, request, env)
+  if (url.pathname === '/api/waitlist') return json({ ok: false, error: 'waitlist_closed' }, 410, request, env)
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
     return json({ ok: false, error: 'invalid_content_type' }, 415, request, env)
   }
@@ -65,7 +63,6 @@ async function route(request, env) {
   if (!turnstileOk) return json({ ok: false, error: 'verification_failed' }, 400, request, env)
 
   if (url.pathname === '/api/contact') return submitContact(body, request, env)
-  if (url.pathname === '/api/waitlist') return submitWaitlist(body, request, env)
   return json({ ok: false, error: 'not_found' }, 404, request, env)
 }
 
@@ -100,54 +97,6 @@ async function submitContact(body, request, env) {
   })
 
   return json({ ok: true }, 200, request, env)
-}
-
-async function submitWaitlist(body, request, env) {
-  const email = normalizeEmail(body.email)
-  if (!email) return json({ ok: false, error: 'invalid_fields' }, 400, request, env)
-
-  const existing = await env.DB.prepare('SELECT status FROM waitlist WHERE email = ?').bind(email).first()
-  if (existing?.status === 'confirmed') {
-    return json({ ok: true, status: 'registered' }, 200, request, env)
-  }
-
-  const fingerprint = await requestFingerprint(request, env)
-  const [ipAllowed, emailAllowed] = await Promise.all([
-    consumeRateLimit(env, `waitlist-ip:${fingerprint}`, 5, 60 * 60),
-    consumeRateLimit(env, `waitlist-email:${await keyedHash(email, env.TOKEN_SECRET)}`, 2, 24 * 60 * 60),
-  ])
-  if (!ipAllowed || !emailAllowed) {
-    return json({ ok: false, error: 'rate_limited' }, 429, request, env)
-  }
-
-  const token = randomToken()
-  const tokenHash = await sha256(token)
-  const requestedAt = new Date().toISOString()
-  await env.DB.prepare(`
-    INSERT INTO waitlist (email, status, confirmation_token_hash, requested_at, confirmed_at, consent_version)
-    VALUES (?, 'pending', ?, ?, NULL, ?)
-    ON CONFLICT(email) DO UPDATE SET
-      status = 'pending', confirmation_token_hash = excluded.confirmation_token_hash,
-      requested_at = excluded.requested_at, confirmed_at = NULL, consent_version = excluded.consent_version
-  `).bind(email, tokenHash, requestedAt, CONSENT_VERSION).run()
-
-  const publicSite = env.PUBLIC_SITE_URL || 'https://primis3d.com'
-  const confirmationUrl = `${publicSite}/confirm?t=${encodeURIComponent(token)}`
-  const confirmationEmail = buildWaitlistConfirmationEmail(confirmationUrl)
-
-  try {
-    await sendEmail(env, {
-      to: email,
-      subject: 'One step away — confirm your Atlas place',
-      text: confirmationEmail.text,
-      html: confirmationEmail.html,
-    })
-  } catch (error) {
-    await env.DB.prepare("DELETE FROM waitlist WHERE email = ? AND status = 'pending'").bind(email).run()
-    throw error
-  }
-
-  return json({ ok: true, status: 'confirmation_sent' }, 200, request, env)
 }
 
 async function confirmWaitlist(url, env) {
@@ -332,11 +281,6 @@ async function sha256(value) {
 
 function bytesToHex(bytes) {
   return [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('')
-}
-
-function randomToken() {
-  const bytes = crypto.getRandomValues(new Uint8Array(32))
-  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
 }
 
 function normalizeEmail(value) {
