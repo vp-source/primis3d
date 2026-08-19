@@ -1033,7 +1033,7 @@ function WorldsGallery() {
         <div className="world-library-groups">
           {worldGroups.map(group => (
             <section className="world-library-group" aria-labelledby={`world-group-${group.category.toLowerCase()}`} key={group.category}>
-              <header><h3 id={`world-group-${group.category.toLowerCase()}`}>{group.category}</h3><span>{String(group.worlds.length).padStart(2, '0')} SOURCE SCENES</span></header>
+              <header><h3 id={`world-group-${group.category.toLowerCase()}`}>{group.category}</h3></header>
               <div className="world-library-grid" style={{ '--world-columns': group.worlds.length }} role="group" aria-label={`Select ${group.category.toLowerCase()} reconstruction`}>
                 {group.worlds.map(item => (
                   <button className={activeWorld === item.index ? 'active' : ''} onClick={() => openWorld(item.index)} key={item.name} aria-label={`View ${item.name} as a 3D reconstruction`}>
