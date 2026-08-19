@@ -904,8 +904,7 @@ const worldCatalog = [
   { name: 'Living Room', family: 'Residential interior', category: 'Indoor', image: '/assets/worlds/indoor-living-room.jpg', alt: 'Minimal living room with sofas, tables, television, lamps, and plants', prompt: 'A residential scene with furniture, electronics, openings, circulation space, and object-to-object relationships preserved.' },
   { name: 'Private Office', family: 'Workplace interior', category: 'Indoor', image: '/assets/worlds/indoor-private-office.jpg', alt: 'Private office with desk, seating, storage, computer, and plants', prompt: 'A compact workplace world with selectable furniture, equipment, storage, architectural boundaries, and real-world clearances.' },
   { name: 'Winter Cabin', family: 'Cabin interior', category: 'Indoor', image: '/assets/worlds/indoor-winter-cabin.jpg', alt: 'Warm timber cabin interior overlooking a snowy forest', prompt: 'A timber cabin reconstructed with its fireplace, furniture, lighting, openings, and dense material boundaries intact.' },
-  { name: 'Medieval Tavern', family: 'Historic interior', category: 'Indoor', image: '/assets/worlds/indoor-medieval-tavern.jpg', alt: 'Medieval tavern interior with bar, tables, stools, fireplace, and timber beams', prompt: 'A detailed period interior separated into architecture, furniture, vessels, lighting, and usable open floor space.' },
-  { name: 'Kitchen', family: 'Domestic workspace', category: 'Indoor', image: '/assets/worlds/indoor-kitchen.jpg', alt: 'Bright kitchen with cabinets, island, appliances, stools, and pendant lights', prompt: 'A domestic workspace whose cabinetry, appliances, surfaces, fixtures, and circulation zones become editable scene elements.' }
+  { name: 'Medieval Tavern', family: 'Historic interior', category: 'Indoor', image: '/assets/worlds/indoor-medieval-tavern.jpg', alt: 'Medieval tavern interior with bar, tables, stools, fireplace, and timber beams', prompt: 'A detailed period interior separated into architecture, furniture, vessels, lighting, and usable open floor space.' }
 ]
 
 function PlaceholderTerrain({ compact = false, variant = 0, channel = '' }) {
@@ -982,7 +981,7 @@ function WorldsGallery() {
         <div className="world-exhibition-title">
           <h1>Worlds built<br /><em>to be explored.</em></h1>
         </div>
-        <p>Explore five outdoor and six indoor source scenes. Open any photograph as a temporary 3D reconstruction now, then replace the placeholder with its finished world model.</p>
+        <p>Explore five outdoor and five indoor source scenes. Open any photograph as a temporary 3D reconstruction now, then replace the placeholder with its finished world model.</p>
       </header>
 
       <div className="world-stage">
@@ -1012,7 +1011,7 @@ function WorldsGallery() {
       </div>
 
       <section className="world-library" aria-labelledby="world-library-title">
-        <div className="world-library-heading"><h2 id="world-library-title">Eleven worlds in progress.</h2><p>Five outdoor environments and six indoor environments. Every source photograph is paired with a temporary 3D reconstruction view.</p></div>
+        <div className="world-library-heading"><h2 id="world-library-title">Ten worlds in progress.</h2><p>Five outdoor environments and five indoor environments. Every source photograph is paired with a temporary 3D reconstruction view.</p></div>
         <div className="world-library-groups">
           {worldGroups.map(group => (
             <section className="world-library-group" aria-labelledby={`world-group-${group.category.toLowerCase()}`} key={group.category}>
