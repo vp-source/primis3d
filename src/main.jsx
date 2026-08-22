@@ -718,7 +718,6 @@ function WorkingWorldsSection() {
           {capability.type === 'video'
             ? <video key={capability.media} autoPlay muted loop playsInline preload="metadata"><source src={capability.media} type="video/mp4" /></video>
             : <img src={capability.media} alt="Robot task simulation inside a reconstructed workshop" />}
-          <span>{capability.tag}</span>
         </div>
       </div>
     </section>
