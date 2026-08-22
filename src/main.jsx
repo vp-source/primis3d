@@ -689,8 +689,8 @@ const worldCatalog = [
 ]
 
 const atlasCapabilities = [
-  { title: 'Reconstruct', text: 'Drop in a single image and Primis rebuilds the entire scene in 3D. Every object is placed at real-world scale, one after another.', media: '/assets/cap-reconstruct.mp4', type: 'video', tag: 'Single image → 3D scene' },
   { title: 'Decompose', text: 'Every object separates into its own clean, engine-ready mesh, individually selectable and named down to its sub-parts. You set the fidelity, from a quick layout to full detail.', media: '/assets/cap-decompose.mp4', type: 'video', tag: 'Scene → editable objects' },
+  { title: 'Reconstruct', text: 'Drop in a single image and Primis rebuilds the entire scene in 3D. Every object is placed at real-world scale, one after another.', media: '/assets/cap-reconstruct.mp4', type: 'video', tag: 'Single image → 3D scene' },
   { title: 'Simulate', text: 'Run robots and processes inside the world before you ever touch hardware. Grab a box off the shelf, place a tool inside it, and rehearse the whole task to scale.', media: '/assets/cap-simulate.jpg', type: 'image', tag: 'World → simulation' },
   { title: 'Reason', text: 'Every object in the scene is known, so you can ask about it in plain language. Pose a question like “where is the white helmet?” and get a grounded spatial answer.', media: '/assets/cap-reason.mp4', type: 'video', tag: 'Scene → spatial answer' }
 ]
