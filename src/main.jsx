@@ -683,9 +683,7 @@ const worldCatalog = [
   { name: 'Robotics Warehouse', family: 'Industrial interior', category: 'Indoor', image: '/assets/worlds/indoor-robotics-warehouse.jpg', reconstruction: warehouseReconstruction, alt: 'Bright warehouse with storage racks, forklift, workbench, and robot arm', reconstructionAlt: 'Reconstructed warehouse scene with storage racks, forklift, workbench, and robot arm', prompt: 'A working warehouse reconstructed as separate racks, pallets, vehicle, robot cell, clear floor, and navigable aisles.' },
   { name: 'Living Room', family: 'Residential interior', category: 'Indoor', image: '/assets/worlds/indoor-living-room.jpg', reconstruction: livingRoomReconstruction, alt: 'Minimal living room with sofas, tables, television, lamps, and plants', reconstructionAlt: 'Reconstructed living room scene with separate furniture, television, lighting, and plants', prompt: 'A residential scene with furniture, electronics, openings, circulation space, and object-to-object relationships preserved.' },
   { name: 'Private Office', family: 'Workplace interior', category: 'Indoor', image: '/assets/worlds/indoor-private-office.jpg', reconstruction: officeReconstruction, alt: 'Private office with desk, seating, storage, computer, and plants', reconstructionAlt: 'Reconstructed private office scene with desk, seating, storage, computer, and plants', prompt: 'A compact workplace world with selectable furniture, equipment, storage, architectural boundaries, and real-world clearances.' },
-  { name: 'Alpine Ruins', family: 'Mountain world', category: 'Outdoor', image: '/assets/worlds/outdoor-alpine-ruins.jpg', alt: 'Mountain landscape crossed by paths and monumental stone ruins', prompt: 'A mountain-scale world with connected trails, ruins, cliffs, vegetation, and long-range terrain relationships.' },
   { name: 'Enchanted Tower', family: 'Fantasy clearing', category: 'Outdoor', image: '/assets/worlds/outdoor-enchanted-tower.jpg', alt: 'Tall stone tower in a bright magical forest clearing', prompt: 'A contained forest world with a central tower, branching paths, trees, rocks, and individually addressable landmarks.' },
-  { name: 'Clockwork Street', family: 'Urban corridor', category: 'Outdoor', image: '/assets/worlds/outdoor-clockwork-street.jpg', alt: 'Warm steampunk street lined with shops, pipes, clocks, and an airship', prompt: 'A street-scale reconstruction with connected facades, shop fronts, props, roadway geometry, and layered vertical detail.' },
   { name: 'Last Station', family: 'Roadside site', category: 'Outdoor', image: '/assets/worlds/outdoor-last-station.jpg', alt: 'Abandoned gas station and car in a dark foggy forest', prompt: 'A low-visibility roadside scene where the station, pumps, vehicle, road surface, and surrounding forest remain spatially distinct.' },
   { name: 'Desert Relay', family: 'Infrastructure site', category: 'Outdoor', image: '/assets/worlds/outdoor-desert-relay.jpg', alt: 'Fenced satellite and communications relay site in a desert valley', prompt: 'A bounded infrastructure world with a dish, mast, equipment building, generator, fence, and measurable terrain.' }
 ]
@@ -738,7 +736,7 @@ function WorldsGallery() {
         <div className="world-exhibition-title">
           <h1>Worlds built<br /><em>to be explored.</em></h1>
         </div>
-        <p>Five outdoor source worlds and three reconstructed interior scenes. Select an interior to move from the original capture into its current Atlas reconstruction.</p>
+        <p>Three outdoor source worlds and three reconstructed interior scenes. Select an interior to move from the original capture into its current Atlas reconstruction.</p>
       </header>
 
       <section className="world-library" aria-label="Atlas world catalogue">
