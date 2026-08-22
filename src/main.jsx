@@ -728,31 +728,9 @@ function WorkingWorldsSection() {
 }
 
 function WorldsGallery() {
-  const [activeWorld, setActiveWorld] = useState(0)
-  const [stageMode, setStageMode] = useState('transitioning')
-  const [transitionRun, setTransitionRun] = useState(0)
+  const [activeWorld, setActiveWorld] = useState(null)
   const featuredWorlds = worldCatalog
-  const world = featuredWorlds[activeWorld]
-  const hasReconstruction = Boolean(world.reconstruction)
   const worldGroups = ['Indoor', 'Outdoor'].map(category => ({ category, worlds: featuredWorlds.map((item, index) => ({ item, index })).filter(entry => entry.item.category === category) }))
-
-  useEffect(() => {
-    if (stageMode !== 'transitioning') return undefined
-    const timer = window.setTimeout(() => setStageMode('reconstruction'), prefersReducedMotion() ? 180 : 1350)
-    return () => window.clearTimeout(timer)
-  }, [stageMode, transitionRun])
-
-  const openWorld = index => {
-    setActiveWorld(index)
-    setStageMode(featuredWorlds[index].reconstruction ? 'transitioning' : 'source')
-    setTransitionRun(run => run + 1)
-    window.requestAnimationFrame(() => document.querySelector('.world-stage')?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' }))
-  }
-
-  const showReconstruction = () => {
-    setStageMode('transitioning')
-    setTransitionRun(run => run + 1)
-  }
 
   return (
     <section className="world-exhibition">
@@ -763,37 +741,17 @@ function WorldsGallery() {
         <p>Five outdoor source worlds and three reconstructed interior scenes. Select an interior to move from the original capture into its current Atlas reconstruction.</p>
       </header>
 
-      <div className="world-stage">
-        <div className={`world-stage-model is-${stageMode}`} aria-label={stageMode === 'source' || !hasReconstruction ? `Source photograph for ${world.name}` : `Atlas reconstruction of ${world.name}`}>
-          <div className="world-stage-chip"><LogoMark /><span>{stageMode === 'source' || !hasReconstruction ? 'SOURCE PHOTOGRAPH' : 'ATLAS RECONSTRUCTION'}</span></div>
-          {hasReconstruction && <div className="world-stage-switch" role="group" aria-label="Choose source photograph or Atlas reconstruction">
-            <button type="button" className={stageMode === 'source' ? 'active' : ''} aria-pressed={stageMode === 'source'} onClick={() => setStageMode('source')}>Source</button>
-            <button type="button" className={stageMode !== 'source' ? 'active' : ''} aria-pressed={stageMode !== 'source'} onClick={showReconstruction}>Reconstruction</button>
-          </div>}
-          <img key={`source-${world.image}-${transitionRun}`} className="world-stage-source" src={world.image} alt={world.alt} />
-          {hasReconstruction && <img key={`reconstruction-${world.reconstruction}-${transitionRun}`} className="world-stage-reconstruction" src={world.reconstruction} alt={world.reconstructionAlt} />}
-        </div>
-
-        <aside className="world-stage-details">
-          <div className="world-stage-meta"><span>{String(activeWorld + 1).padStart(2, '0')} / {String(featuredWorlds.length).padStart(2, '0')}</span><span>{world.family}</span></div>
-          <h2>{world.name}</h2>
-          <p className="world-stage-prompt">{world.prompt}</p>
-          {hasReconstruction && <p className="world-stage-note">The source image and reconstructed view share the same scene. Use the switch above to compare the original capture with the current Atlas result.</p>}
-        </aside>
-      </div>
-
-      <section className="world-library" aria-labelledby="world-library-title">
-        <div className="world-library-heading"><h2 id="world-library-title">Eight source scenes.<br />Three reconstructed.</h2><p>The indoor examples blend into their current reconstructed results. Outdoor scenes remain as source imagery for now.</p></div>
+      <section className="world-library" aria-label="Atlas world catalogue">
         <div className="world-library-groups">
           {worldGroups.map(group => <section className="world-library-group" key={group.category}>
             <header><h3>{group.category}</h3><span>{String(group.worlds.length).padStart(2, '0')} scenes</span></header>
             <div className="world-library-grid" style={{ '--world-columns': group.worlds.length }} role="group" aria-label={`Select an ${group.category.toLowerCase()} scene`}>
               {group.worlds.map(({ item, index }) => (
-                <button className={activeWorld === index ? 'active' : ''} onClick={() => openWorld(index)} key={item.name} aria-label={item.reconstruction ? `Compare the source and reconstruction for ${item.name}` : `View the source photograph for ${item.name}`}>
+                <button className={activeWorld === index ? 'active' : ''} onClick={() => item.reconstruction && setActiveWorld(current => current === index ? null : index)} disabled={!item.reconstruction} key={item.name} aria-label={item.reconstruction ? `${activeWorld === index ? 'Show source photograph' : 'Show reconstruction'} for ${item.name}` : `${item.name} source photograph`}>
                   <div className={`world-library-image${item.reconstruction ? ' has-reconstruction' : ''}`}>
                     <img className="world-library-source" src={item.image} alt="" loading="lazy" />
                     {item.reconstruction && <img className="world-library-result" src={item.reconstruction} alt="" loading="lazy" />}
-                    <span>{item.reconstruction ? 'Open reconstruction' : 'Open source'}</span>
+                    {item.reconstruction && <span>{activeWorld === index ? 'Show source' : 'Show reconstruction'}</span>}
                   </div>
                   <span>SCENE / {String(index + 1).padStart(2, '0')}</span>
                   <strong>{item.name}</strong>
