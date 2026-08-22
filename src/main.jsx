@@ -90,6 +90,10 @@ const LogoMark = () => {
 function Header() {
   const path = window.location.pathname.replace(/\/$/, '') || '/'
   const lightHeader = path.startsWith('/research/') || [
+    '/',
+    '/worlds',
+    '/about',
+    '/studio',
     '/contact',
     '/privacy',
     '/datenschutz',
@@ -292,7 +296,7 @@ function InnerPageHero({ label, title, accent, copy }) {
 
 function AboutPage() {
   return (
-    <main className="inner-page">
+    <main className="inner-page about-page">
       <Header />
       <InnerPageHero
         label="ABOUT PRIMIS"
@@ -840,7 +844,7 @@ function App() {
   if (path === '/contact') return <ContactPage />
   if (path === '/impressum' || path === '/impressum.html') return <LegalPage type="impressum" />
   if (path === '/privacy' || path === '/datenschutz' || path === '/datenschutz.html') return <LegalPage type="privacy" />
-  return <main><Header /><Hero /><LiveDemoPreview /><WorkingWorldsSection /><Vision /><AtlasOverview /><SiteFooter /></main>
+  return <main className="marketing-home"><Header /><Hero /><LiveDemoPreview /><WorkingWorldsSection /><Vision /><AtlasOverview /><SiteFooter /></main>
 }
 
 createRoot(document.getElementById('root')).render(<App />)
