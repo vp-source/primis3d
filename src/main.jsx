@@ -162,7 +162,7 @@ function LiveDemoPreview() {
           preload="metadata"
           aria-label="Atlas Studio development reconstruction demonstration"
         >
-          <source src="/assets/primis-demo.webm" type="video/webm" />
+          <source src="/assets/primis-demo-trimmed.webm" type="video/webm" />
         </video>
         <figcaption className="sr-only">A development capture of Atlas Studio reconstructing a photograph into a structured 3D scene.</figcaption>
       </figure>
